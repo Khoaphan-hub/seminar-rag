@@ -1,0 +1,28 @@
+{
+  "python": "3.11.6",
+  "packages": {
+    "numpy": "2.4.6",
+    "scikit-learn": "1.9.1",
+    "sentence-transformers": "6.2.0",
+    "pypdf": "6.21.2",
+    "torch": "2.14.1",
+    "transformers": "5.20.2"
+  },
+  "model": "sentence-transformers/all-MiniLM-L6-v2",
+  "embedding_dim": 384,
+  "max_seq_length": 256,
+  "similarity": "cosine on L2-normalized vectors; exact exhaustive search",
+  "question_sha256": "4fb3d9e67ab28ca6fa058b173c104e6d4e8c07bd67260fb64e737765c906d28b",
+  "generation_config_preselected": {
+    "chunk_tokens": 192,
+    "k": 3,
+    "reason": "Fixed before inspecting retrieval results; balance context and cost."
+  },
+  "limitations": [
+    "20 manually authored English questions, one paper",
+    "No train/test tuning split; descriptive demonstration only",
+    "Gold evidence is a selected reference set, not exhaustive semantic relevance judgments",
+    "PDF tables retained as extracted text",
+    "Chunk recall penalizes redundant overlapping relevant chunks; evidence recall also reported"
+  ]
+}

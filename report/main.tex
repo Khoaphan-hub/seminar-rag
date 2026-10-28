@@ -1,0 +1,177 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setmonofont{Consolas}[Scale=0.88]
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,tabularx,graphicx}
+\usepackage[hidelinks]{hyperref}
+\pagestyle{plain}
+\setlength{\headheight}{15pt}\setlength{\parindent}{0pt}\setlength{\parskip}{7pt}
+\linespread{1.08}
+\begin{document}
+\begin{center}
+{\LARGE\bfseries RAG và mức độ hỗ trợ của bằng chứng\par}
+\vspace{8pt}{\large So sánh truy xuất TF-IDF và embedding trên corpus học máy mở}\par
+CS420 — Introduction to Artificial Intelligence\par
+Nhóm seminar S07
+\end{center}
+\section*{Abstract}
+Báo cáo nghiên cứu cách kết hợp truy xuất với mô hình ngôn ngữ để trả lời câu hỏi dựa trên tài liệu. Dựa trên Lewis và cộng sự~\cite{lewis} cùng góc nhìn kiểm chứng của Schneider~\cite{schneider}, chúng tôi phân biệt việc tìm bằng chứng, độ đúng của câu trả lời và mức độ trích dẫn hỗ trợ nội dung. Thí nghiệm sử dụng bài abess năm 2022 gồm bảy trang theo giấy phép CC BY 4.0, với 20 câu hỏi tiếng Anh và đoạn đáp án tham chiếu. TF-IDF và MiniLM dùng chung các đoạn 96/192 token và $k\in\{1,3,5\}$. Với đoạn 192 token và $k=3$, Recall@k theo chunk tham chiếu đạt 0,80 đối với TF-IDF và 0,60 đối với embedding. Các số này mô tả truy xuất, không phải độ chính xác của câu trả lời. Kết quả cho thấy cần kiểm tra toàn bộ pipeline; corpus nhỏ và tập nhãn chưa bao quát mọi diễn đạt tương đương hạn chế khả năng khái quát hóa.
+\section{Introduction}
+LLM có thể tạo văn bản trôi chảy dù nội dung không có cơ sở kiểm chứng. Trong hỏi đáp tài liệu, người dùng còn cần biết thông tin đến từ đâu, thuộc phiên bản nào và có bị suy diễn quá mức không. RAG bổ sung bước tìm kiếm trước khi sinh: chọn các đoạn liên quan, đưa chúng vào ngữ cảnh và yêu cầu mô hình trả lời kèm nguồn.
+
+\textbf{Câu hỏi nghiên cứu:} Cung cấp tài liệu ngoài có loại bỏ hallucination trong mô hình ngôn ngữ không? Báo cáo xét hai câu hỏi phụ: thay đổi cách biểu diễn và kích thước đoạn ảnh hưởng thế nào đến việc tìm bằng chứng; và bằng chứng đã tìm được có thực sự hỗ trợ nội dung được sinh ra không?
+
+Mục tiêu là một minh họa nhỏ có thể tái lập, làm rõ mô hình xác suất và các cơ chế lỗi. Thí nghiệm không huấn luyện lại LLM, không tái lập quy mô Wikipedia của paper gốc và không xếp hạng tổng quát các model. Corpus là snapshot năm 2022; các câu hỏi về phiên bản, benchmark và môi trường phải được hiểu theo thời điểm bài viết, không phải thông tin hiện tại.
+
+Các số liệu của tác giả paper và số đo do mã nhóm tạo ra được ghi tách biệt. Câu trả lời tham chiếu viết thủ công có nhãn rõ ràng, không tính là đầu ra API. Mọi câu hỏi đều có đáp án trong corpus, nhưng không bảo đảm đáp án có mặt trong context top-k của từng nhánh.
+
+\newpage
+\section{Background và tổng quan paper}
+\textbf{Parametric memory} là kiến thức thể hiện trong trọng số đã học của mô hình. \textbf{Non-parametric memory} là kho nội dung ngoài trọng số, được truy cập qua tìm kiếm. Khái niệm thứ hai mô tả nơi lưu kiến thức; query encoder và document encoder vẫn có tham số học được.
+\begin{table}[h]\centering\small
+\begin{tabularx}{\linewidth}{p{2.3cm}XXX}\toprule
+Cách tiếp cận & Nơi đưa kiến thức & Khi trả lời & Cập nhật\\\midrule
+Fine-tuning & Điều chỉnh trọng số & Dùng model đã điều chỉnh & Thường cần học thêm\\
+Toàn bộ tài liệu trong prompt & Ngữ cảnh đầu vào & Đọc mọi tài liệu được gửi & Gửi lại bản mới\\
+RAG & Kho tìm kiếm ngoài & Chọn top-k rồi sinh & Cập nhật kho và index\\\bottomrule
+\end{tabularx}
+\caption{Nhóm tổng hợp dựa trên~\cite{lewis}. Các cách có thể kết hợp.}
+\end{table}
+RAG và fine-tuning không loại trừ nhau. Lewis và cộng sự kết hợp DPR với BART, huấn luyện query encoder và generator, giữ document encoder và index cố định. Kho Wikipedia tháng 12/2018 được chia thành khoảng 21 triệu đoạn, mỗi đoạn 100 từ. Tài liệu là biến tiềm ẩn và xác suất đầu ra được tổng hợp qua các tài liệu truy xuất. Demo của báo cáo dùng TF-IDF/MiniLM/Gemini nên không phải bản tái lập kiến trúc này.
+
+Paper đóng góp một mô hình kết hợp bộ nhớ trong/ngoài cho nhiều tác vụ cần kiến thức và hai công thức RAG-Sequence/RAG-Token. Trong Bảng 1 của paper, RAG-Sequence đạt Exact Match 44,5 trên Natural Questions, DPR đạt 41,5. Bảng 6 cho thấy BM25 tốt hơn các biến thể dense được liệt kê trên FEVER ở phép ablation đó. Vì vậy không nên giả định dense luôn thắng từ khóa. Đây là kết quả của tác giả trên dữ liệu riêng, không phải số đo của nhóm.
+
+Schneider~\cite{schneider} tổng hợp yêu cầu giải thích cho GenAI, đặc biệt là \textit{verifiability} và \textit{lineage}. Nguồn gốc dữ liệu và khả năng đối chiếu giúp kiểm chứng, nhưng giải thích do model tự viết cũng có thể sai. RAG thu hẹp tập nguồn cần xem xét, không chứng minh mọi phát biểu được sinh đều do các nguồn đó hỗ trợ. Lewis cung cấp mô hình và bằng chứng thực nghiệm; Schneider đặt câu hỏi liệu giải thích và nguồn có kiểm chứng được không.
+
+\textbf{Pipeline của demo:}
+\begin{center}\begin{tabular}{c}
+Nạp PDF và giữ trang, nguồn, hash\\$\downarrow$\\
+Chuẩn hóa, chunking và overlap\\$\downarrow$\\
+Index TF-IDF hoặc embedding, truy xuất top-k theo câu hỏi\\$\downarrow$\\
+Ghép context và chỉ dẫn vào prompt, Gemini tạo câu trả lời\\$\downarrow$\\
+Kiểm tra từng phát biểu và citation
+\end{tabular}\end{center}
+\textit{Hình 1. Sơ đồ do nhóm xây dựng, tham khảo~\cite{lewis}.}
+
+\newpage
+\section{Method và worked example}
+\subsection*{RAG-Sequence và RAG-Token}
+Với câu hỏi $x$, chuỗi trả lời $y=(y_1,\ldots,y_N)$ và tập top-k $Z_k(x)$, công thức RAG-Sequence là~\cite{lewis}:
+\begin{equation}
+p(y\mid x)\approx\sum_{z\in Z_k(x)}p_\eta(z\mid x)\,p_\theta(y\mid x,z),\qquad
+p_\theta(y\mid x,z)=\prod_{i=1}^{N}p_\theta(y_i\mid x,z,y_{<i}).
+\end{equation}
+$z$ là tài liệu tiềm ẩn; $k$ là số nguyên dương không vượt số đoạn; $N$ là số token trả lời; $\eta,\theta$ là tham số retriever và generator. Các xác suất thuộc $[0,1]$ và không có đơn vị. Tổng chỉ xét top-k nên xấp xỉ tổng trên toàn kho; phải nói rõ có chuẩn hóa lại trọng số trong top-k hay không. RAG-Sequence dùng cùng $z$ cho cả chuỗi bên trong mỗi thành phần của tổng. RAG-Token cho phép tài liệu tiềm ẩn thay đổi theo vị trí:
+\[p(y\mid x)\approx\prod_{i=1}^{N}\sum_{z\in Z_k(x)}p_\eta(z\mid x)p_\theta(y_i\mid x,z,y_{<i}).\]
+Điều này không bắt buộc tìm kiếm lại mỗi token. Demo nối context rồi gọi API không thực hiện phép marginalization trong hai công thức.
+
+\textbf{Ví dụ số giả định.} Cho hai tài liệu là toàn bộ không gian xét, trọng số $p_\eta(z_1\mid x)=0{,}6$, $p_\eta(z_2\mid x)=0{,}4$ đã chuẩn hóa. Giả sử xác suất của \emph{cả chuỗi} $y$ khi đọc từng tài liệu là 0,7 và 0,2. Bước 1: tính đóng góp $0{,}6\times0{,}7=0{,}42$. Bước 2: tính $0{,}4\times0{,}2=0{,}08$. Bước 3: cộng hai nhánh được $p(y\mid x)=0{,}50$. Đây là số giả định để học công thức, không thu từ Gemini và không phải xác suất câu trả lời đúng về mặt thực tế.
+
+\subsection*{Hai cách biểu diễn và xếp hạng}
+TF-IDF dùng lowercase, stopword tiếng Anh, unigram/bigram và IDF làm trơn của scikit-learn~\cite{sklearn}. Với $M$ chunk, $df(t)$ là số chunk chứa từ/ngram $t$, $tf(t,d)$ là số lần xuất hiện:
+\[idf(t)=\log\frac{1+M}{1+df(t)}+1,\qquad w_{t,d}=tf(t,d)idf(t).\]
+IDF không có đơn vị và không nhỏ hơn 1 trong cấu hình này. Câu hỏi dùng vocabulary và IDF đã fit trên corpus; không fit lại bằng câu hỏi/đáp án. Nhánh dense dùng all-MiniLM-L6-v2, vector 384 chiều~\cite{minilm}. Hai nhánh chuẩn hóa L2 và tính:
+\[\operatorname{cos}(q,d)=\frac{q^\top d}{\|q\|_2\|d\|_2}.\]
+Cosine tổng quát thuộc $[-1,1]$; TF-IDF không âm có cosine thuộc $[0,1]$. Vector query TF-IDF bằng không được chấm similarity 0. Ví dụ $q=(1,1)$, $d=(1,0)$ cho cosine $1/\sqrt2\approx0{,}707$. Điểm lớn là tương đồng cao, không phải xác suất đáp án đúng. Corpus nhỏ cho phép tìm chính xác trên mọi vector; không cần tìm kiếm xấp xỉ hoặc Chroma.
+
+\newpage
+\subsection*{Corpus và thiết kế đánh giá}
+Corpus là toàn bộ bảy trang của Zhu và cộng sự~\cite{abess}; trang 1--4 chứa nội dung chính, trang 5--7 là lời cảm ơn/tài liệu tham khảo. PDF có CC BY 4.0 ở trang 1. Manifest lưu URL, tác giả, giấy phép và SHA-256. Bản text được chuẩn hóa Unicode NFKC, nối từ xuống dòng và gộp khoảng trắng. Không sửa bảng thành câu diễn giải chứa sẵn đáp án.
+
+Bộ 20 câu hỏi được soạn và lưu trước khi chạy, có đáp án và khoảng ký tự bằng chứng trên trang cụ thể. Q09 phân biệt giấy phép bài báo với phần mềm; Q18 hỏi phạm vi bảo đảm đa thức; Q19 kiểm tra việc khái quát tốc độ hơn 20 lần. Không đưa câu hỏi/reference vào index hoặc huấn luyện model. Gold do AI hỗ trợ soạn và đã được so khớp với nguồn, nhưng cần nhóm kiểm tra độc lập trước khi nộp.
+
+Chunking độc lập theo trang dùng tokenizer WordPiece của MiniLM: 96/192 token, overlap 24 token, tạo 81/36 chunk. Cộng token đặc biệt vẫn không vượt giới hạn 256 của model; không âm thầm cắt đoạn dài khi embedding. Mỗi phương pháp thử $k=1,3,5$ trên cùng chunk; ties giữ thứ tự ổn định. Token MiniLM khác token tính phí Gemini và khác số từ/ký tự.
+
+Với $R_q$ là các chunk chứa trọn ít nhất một đoạn gold của câu $q$, $T_{q,k}$ là top-k:
+\[\operatorname{Recall@k}(q)=\frac{|R_q\cap T_{q,k}|}{|R_q|},\qquad
+\operatorname{MacroRecall@k}=\frac1{20}\sum_q\operatorname{Recall@k}(q).\]
+Các $R_q$ trong thí nghiệm đều khác rỗng. Tỷ lệ thuộc $[0,1]$, không đơn vị. Overlap có thể tạo nhiều chunk chứa cùng fact, nên báo cáo thêm evidence recall (tỷ lệ đoạn gold được phủ trọn bởi hợp các chunk), hit (ít nhất một đoạn được phủ), all-evidence (toàn bộ gold được phủ). Một câu cần hai đoạn, lấy đủ một đoạn thì evidence recall bằng $1/2$ nhưng hit bằng 1.
+
+Gold là tập tham chiếu được chọn, không phải nhãn mọi đoạn tương đương. Chẳng hạn Q03 có thông tin PyPI/CRAN lặp ở trang 2 ngoài gold trang 1. Vì vậy điểm truy xuất không thay thế chấm nội dung response. Với generation, ba điều kiện là closed-book, TF-IDF RAG, embedding RAG. Cùng Gemini 3.5 Flash-Lite, temperature 0, tối đa 2048 output token, mỗi lượt độc lập; hai RAG cùng 192 token và $k=3$, chọn trước khi xem bảng kết quả.
+
+\subsection*{Ví dụ hỏi, truy xuất và trả lời}
+Q08 hỏi coverage của Python/R. TF-IDF trả \texttt{s192-p2-t336}, \texttt{s192-p1-t336}, \texttt{s192-p2-t504}. Đoạn đầu ghi hai số 97\% và 96\%. Prompt giữ cả ba đoạn, ID và trang, yêu cầu chỉ dùng context, dẫn nguồn và nói thiếu thông tin khi cần. \textbf{Reference do người soạn viết:} ``The paper reports 97\% test coverage for Python and 96\% for R [s192-p2-t336].'' Kiểm chứng phải đối chiếu cả số, thứ tự Python/R và đúng chunk. Response API được lưu riêng, không thay bằng câu reference này.
+
+\newpage
+\section{Results và Discussion}
+\subsection*{Kết quả truy xuất thực đo}
+\input{retrieval_table.tex}
+Tại 192 token, $k=3$, TF-IDF đạt hit 85\%, evidence recall 80\%, all-evidence 75\%; MiniLM lần lượt đạt 65\%, 62,5\%, 60\%. Ở $k=5$, evidence recall tăng lên 90\% và 75\%. Đây chỉ là tác động lên truy xuất. Generation không chạy ở mọi k nên không thể suy ra tăng k chắc chắn cải thiện câu trả lời.
+
+Các câu hỏi có nhiều tên class, license, NNZ và AUC trùng từ vựng paper, thuận lợi cho TF-IDF. MiniLM nhỏ có thể ưu tiên đoạn cùng chủ đề phần mềm nhưng thiếu chi tiết. Đây là diễn giải hợp lý sau khi đọc kết quả, chưa tách được tác động model, wording và preprocessing bằng thiết kế nhân quả. Kết quả không chứng minh dense kém lexical nói chung.
+
+\subsection*{Ba thất bại truy xuất được phân tích}
+\textbf{Q06 — thiếu bằng chứng.} TF-IDF 192 token, $k=3$ không lấy được đoạn phiên bản Python $\ge3.6$, R $\ge3.1.0$; MiniLM lấy được \texttt{s192-p2-t336}. Một phương pháp có tổng điểm thấp hơn vẫn có thể giải quyết tốt hơn một câu cụ thể. Nếu generator thiếu context, cần phân biệt từ chối với suy đoán hoặc dùng kiến thức ngoài.
+
+\textbf{Q13 — đoạn gần chủ đề nhưng không trả lời.} TF-IDF trả kết luận và tài liệu tham khảo thay vì đoạn kiến trúc nêu cách mở rộng bằng subclass Algorithm. MiniLM có lấy \texttt{s192-p2-t672}. Việc đoạn nói chung về tác vụ máy học không đủ hỗ trợ cách mở rộng thư viện.
+
+\textbf{Q09 — bằng chứng nhiều phần.} Câu hỏi cần GPL-3 cho code và CC BY 4.0 cho article. TF-IDF có đoạn GPL-3 ở trang 2 nhưng thiếu statement giấy phép bài ở trang 1. Nếu chỉ chấm hit, câu này có thể trông thành công dù thiếu một phần đáp án. Cần all-evidence và kiểm tra phát biểu riêng lẻ. Lỗi này gợi ý dùng truy vấn con cho từng đối tượng cần so sánh.
+
+\newpage
+\subsection*{So sánh câu trả lời và trích dẫn}
+\input{generation_results.tex}
+
+\newpage
+\subsection*{Phân loại lỗi qua toàn pipeline}
+\begin{table}[h]\centering\small
+\begin{tabularx}{\linewidth}{p{2.7cm}XX}\toprule
+Loại lỗi & Cách nhận diện & Cách xử lý đề xuất\\\midrule
+Missing retrieval & Top-k không đủ thông tin cần & Mở rộng truy vấn/k, tìm nguồn bổ sung\\
+Incorrect retrieval & Lấy đoạn gần chủ đề nhưng sai nội dung & Hybrid/reranking, kiểm tra từ khóa đặc thù\\
+Irrelevant citation & ID có thật nhưng không hỗ trợ nhận định & Đối chiếu từng claim với đúng chunk\\
+Beyond evidence & Phát biểu vượt những gì context nói & Tách phần chắc chắn, từ chối phần thiếu nguồn\\\bottomrule
+\end{tabularx}
+\caption{Khung phân tích do nhóm tổng hợp theo đề và~\cite{schneider}.}
+\end{table}
+Một câu có thể thuộc nhiều nhóm. Khi retrieval thiếu, model có thể từ chối, trả lời đúng nhờ parametric memory hoặc bịa. Vì vậy không quy mọi câu sai cho retriever, cũng không suy ra grounding từ correctness. Thông tin đúng trong toàn PDF nhưng không có trong context vẫn vượt bằng chứng được đưa vào ở lượt đó.
+
+\textbf{Minh họa citation sai do người soạn tạo.} Gắn \texttt{s192-p1-t336} vào câu coverage 97\%/96\% của Q08 là không phù hợp, bởi các số nằm trong \texttt{s192-p2-t336}. Citation có ID tồn tại không đảm bảo support. Tình huống này chỉ minh họa phép kiểm tra và không được đếm thành lỗi Gemini nếu nhật ký không có hành vi đó.
+
+\textbf{Các điểm hỏng trước generation.} Nạp PDF có thể mất chữ, dữ liệu cũ có thể vẫn nằm trong index. Bảng có thể mất cấu trúc hàng--cột khi trích xuất. Chunk có thể cắt mất điều kiện ở cuối câu hoặc ở trang kế tiếp. IDF có thể ưu tiên từ trùng mà không liên quan; embedding có thể ưu tiên tương tự chủ đề. Prompt có thể mất metadata, bị cắt hoặc chứa chỉ dẫn nằm trong tài liệu. Demo đánh dấu SOURCE và yêu cầu coi nội dung này là bằng chứng, không phải chỉ thị, nhưng không coi đó là bảo đảm an toàn tuyệt đối.
+
+Correctness được chấm theo đáp án tham chiếu; groundedness theo context thật; citation support theo chunk được dẫn. Từ chối khi thiếu context có thể là hành vi thận trọng, nhưng trên bộ câu có đáp án nó không được tính như trả lời đầy đủ. Chấm bằng AI hỗ trợ phải được công bố và không thay cho kiểm tra độc lập của nhóm.
+
+\newpage
+\section{Kiểm chứng, cập nhật và giới hạn}
+\subsection*{Cơ chế kiểm chứng đề xuất}
+Tách response thành các khẳng định có thể kiểm chứng. Với mỗi khẳng định, kiểm tra ID có trong prompt, đoạn được dẫn có nội dung hỗ trợ và điều kiện/phạm vi của nguồn được giữ nguyên. Với câu nhiều phần, cần bằng chứng cho từng phần; nếu thiếu thì trả phần đã biết và nêu phần chưa đủ. Một LLM tự giải thích hoặc tự chấm không tạo thành xác nhận độc lập.
+
+Retriever có thể dùng hybrid, reranking hoặc tăng k khi bằng chứng yếu, nhưng cần hiệu chỉnh trên validation set độc lập. Cosine không phải xác suất; đặt ngưỡng tùy ý không bảo đảm độ tin cậy. Tăng k cũng tăng nhiễu, chi phí và số nguồn cần kiểm tra, nên cần đo cả chất lượng lẫn thời gian.
+
+\subsection*{Cập nhật và truy vết tài liệu}
+Mỗi nguồn giữ URL, license, phiên bản và hash. Khi hash đổi, trích xuất/chunk/index lại; khi nguồn bị xóa phải loại chunk cũ. Chạy bộ regression kiểm tra đáp án và citation, giữ snapshot cũ để tái lập. Câu hỏi lịch sử năm 2022 phải tiếp tục gắn với snapshot 2022, không âm thầm thay bằng tài liệu mới rồi chấm như cùng một bài. Metadata giúp phân biệt nguồn gốc bằng chứng với lời giải thích do model tạo ra.
+
+\subsection*{Giới hạn}
+Chỉ một paper, 20 câu hỏi chủ động thiết kế, một embedding nhỏ và một lần sinh mỗi điều kiện. Corpus bảy trang có ba trang chủ yếu là bibliography, không đại diện cho kho nhiều nguồn mâu thuẫn. Tập gold không bao quát mọi diễn đạt tương đương; chia độc lập theo trang có thể đứt ngữ cảnh. Bộ câu hỏi có AI hỗ trợ nên cần nhóm tự đối chiếu và bổ sung tập đánh giá mới.
+
+Không có tập tuning/test độc lập hoặc kiểm định ý nghĩa thống kê. Paper công khai có thể nằm trong dữ liệu huấn luyện Gemini, nên closed-book không đo kiến thức hoàn toàn mới. Temperature 0 không bảo đảm API tái lập tuyệt đối. Thay đổi model phía nhà cung cấp, quota và lỗi mạng cũng có thể làm một lần chạy chưa đầy đủ; chỉ tính mẫu có response thực, không biến lỗi API thành đáp án sai hoặc tạo dữ liệu thay thế.
+
+\section{Conclusion}
+RAG cung cấp cơ chế tìm và dẫn chứng tài liệu, nhưng không tự động loại bỏ hallucination. Trong phép đo này TF-IDF vượt MiniLM ở chỉ số tổng hợp, trong khi vài câu cho thấy lợi thế ngược lại. Cần kiểm tra nguồn, retrieval và từng khẳng định của generator; có citation chưa đủ để đảm bảo đúng. Kết quả nhỏ giúp minh họa các cơ chế lỗi, không chứng minh một phương pháp luôn tốt hơn hoặc một model không bao giờ hallucinate.
+
+\textbf{Công bố AI.} Codex hỗ trợ mã, câu hỏi, tổng hợp và đối chiếu; Gemini là model thử nghiệm; Canva hỗ trợ slide. Nhãn có AI hỗ trợ cần nhóm kiểm tra độc lập trước khi nộp.
+
+\newpage
+\begin{thebibliography}{9}
+\bibitem{lewis} P. Lewis et al. (2020). \textit{Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks}. NeurIPS. \url{https://papers.neurips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html}.
+\bibitem{schneider} J. Schneider (2024). \textit{Explainable Generative AI (GenXAI): a survey, conceptualization, and research agenda}. Artificial Intelligence Review 57, 289. \url{https://doi.org/10.1007/s10462-024-10916-x}.
+\bibitem{abess} J. Zhu et al. (2022). \textit{abess: A Fast Best-Subset Selection Library in Python and R}. JMLR 23, 1--7. CC BY 4.0. \url{https://jmlr.org/papers/v23/21-1060.html}.
+\bibitem{sklearn} F. Pedregosa et al. (2011). \textit{Scikit-learn: Machine Learning in Python}. JMLR 12, 2825--2830. \url{https://jmlr.org/papers/v12/pedregosa11a.html}. Tài liệu: \url{https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html}.
+\bibitem{minilm} Sentence Transformers. \textit{all-MiniLM-L6-v2 model card}. Apache 2.0. \url{https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2}. Truy cập 28/10/2026.
+\bibitem{gemini} Google. \textit{Gemini API models}. \url{https://ai.google.dev/gemini-api/docs/models}. Model thực tế và metadata lưu trong log.
+\end{thebibliography}
+\section*{Phụ lục và tái lập}
+Repo: \url{https://github.com/Khoaphan-hub/seminar-rag}.
+
+\begin{itemize}
+\item \texttt{data/questions.json}: 20 câu hỏi, reference và gold.
+\item \texttt{results/retrieval\_summary.csv}: bảng truy xuất tổng hợp.
+\item \texttt{results/retrieval\_details.json}: score và chunk từng câu.
+\item \texttt{results/generation.jsonl}: prompt, response API thành công.
+\item \texttt{docs/EVALUATION.md}: rubric và giới hạn nhãn.
+\item \texttt{docs/PRESENTATION\_AND\_QA.md}: phân công và phản biện.
+\end{itemize}
+
+Source PDF và giấy phép được lưu cùng mã. API key, môi trường Python, model weights và vectorstore cũ bị loại khỏi Git. Các paper nền tảng do cô cung cấp được giữ tại máy, không tự gộp vào giấy phép chung của repository. Nhóm bổ sung tên thành viên khi thống nhất.
+\end{document}

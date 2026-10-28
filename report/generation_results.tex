@@ -1,0 +1,19 @@
+Đã thu đủ 60 response từ Gemini 3.5 Flash-Lite, mỗi điều kiện 20 câu, temperature 0. Cả ba nhánh nhận cùng tên bài, tác giả và năm; hai RAG dùng chunk 192 token, $k=3$. Đây là lượt chính thức sau khi sửa prompt của lượt pilot để tránh câu hỏi không có context bị hiểu nhầm sang paper khác. Lượt pilot được lưu riêng và không tính vào bảng dưới.
+
+\begin{table}[h]\centering\small
+\begin{tabular}{lrrrr}\toprule
+Điều kiện & Đúng đủ & Một phần & Từ chối & Điểm TB\\\midrule
+Không truy xuất & 5/20 & 6/20 & 0/20 & 0,400\\
+TF-IDF RAG & 16/20 & 2/20 & 2/20 & 0,850\\
+MiniLM RAG & 14/20 & 3/20 & 3/20 & 0,775\\\bottomrule
+\end{tabular}
+\caption{Đối chiếu có AI hỗ trợ trên response thực tế; chưa có đánh giá mù độc lập. Điểm: đầy đủ 1, một phần 0,5, sai/từ chối 0. Từ chối là một phần của nhóm không đạt, không phải cột độc lập để cộng với mọi nhóm khác.}
+\end{table}
+
+Nhóm chấm yêu cầu giữ đúng đối tượng, số liệu và điều kiện của reference. Mỗi nhãn có lý do cùng hash của response trong \texttt{answer\_review.csv}. Điểm một phần có yếu tố phán đoán: Q19 nêu đúng phạm vi cancer nhưng vẫn trả lời không đủ thông tin thay vì phủ định rõ tính phổ quát. Vì vậy các thành viên cần xác minh lại nhãn trước khi nộp.
+
+\textbf{Sửa đáp án sai nhờ context.} Q16: closed-book trả 100 test sets, trong khi PDF ghi 20; hai RAG trả 20 và dẫn \texttt{s192-p4-t504}. Q06: closed-book trả R 3.5.0 sai, MiniLM trả R $\ge3.1.0$ đúng, TF-IDF từ chối vì thiếu đoạn cần thiết. Chỉ số correctness không nên cộng điểm cho từ chối dù từ chối có thể hợp lý về grounding.
+
+\textbf{Đúng nội dung nhưng thiếu citation.} Q14 của MiniLM trả đúng \texttt{print, coef, plot} nhưng không dẫn nguồn. Cả 40 response RAG không có ID sai dạng được quan sát ở lượt chính thức; điều này chỉ là kiểm tra cấu trúc, không chứng minh mọi citation đúng nghĩa. Ở Q07 MiniLM suy ra dịch vụ kiểm tra code từ URL GitHub Actions, trong khi context không chứa câu mô tả continuous integration; cần ghi đây là suy luận từ URL.
+
+\textbf{Giới hạn gold và cách dùng context.} Q03 MiniLM trả đúng PyPI/CRAN từ URL trang 2 dù gold chọn ở trang 1. Q15 lại từ chối AUC mặc dù đầu một chunk còn số 0.9663829492654472 sát caption Figure 3; do phần code bị tách, model diễn giải nhầm sang bảng benchmark. Hai trường hợp cho thấy phải đọc context thật, không suy ra chất lượng response trực tiếp từ selected-span recall.

@@ -1,0 +1,8 @@
+{
+  "status": "completed",
+  "model": "gemini-3.5-flash-lite",
+  "successful_responses": 60,
+  "completed_at_utc": "2026-10-28T13:42:35.020784+00:00",
+  "generation_sha256": "f23ead1f5204473b562a4df2eea127f65ffd240d0cb8b5e2af0a8caf55d2cb3b",
+  "note": "Final matched-metadata run; pilot excluded from evaluation."
+}

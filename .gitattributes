@@ -1,0 +1,2 @@
+# Preserve exact experiment bytes so SHA-256 provenance survives Windows/Linux clones.
+* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
