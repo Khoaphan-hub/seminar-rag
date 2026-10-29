@@ -42,7 +42,7 @@ def load_and_split_documents(data_dir: str="data", chunk_size: int=500, chunk_ov
 
 if __name__ == "__main__":
     DATA_PATH = "data"  # Specify the path to your data directory
-    # Tạo thư mục data nếu chưa có
+    # Create the data directory if it does not exist.
     if not os.path.exists(DATA_PATH):
         os.makedirs(DATA_PATH)
         print(f"Created directory '{DATA_PATH}'. Please place your PDF files in this directory and run the script again.")

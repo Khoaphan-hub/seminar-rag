@@ -1,7 +1,11 @@
-# Công bố sử dụng công cụ AI
+# Disclosure of AI Assistance
 
-Codex hỗ trợ thiết kế thực nghiệm, soạn bộ câu hỏi, viết mã, tổng hợp báo cáo và chuẩn bị slide. Gemini 3.5 Flash-Lite là đối tượng được đánh giá, không phải người chấm độc lập. Canva hỗ trợ dàn trang slide.
+Codex assisted with experimental design, question construction, code, report drafting and translation, and presentation preparation. Gemini 3.5 Flash-Lite is the model being evaluated, not an independent evaluator. Canva supported the original slide layout.
 
-Các số liệu truy xuất phải được tạo bằng chạy `src.experiment`; câu trả lời Gemini phải có bản ghi API trong `results/generation.jsonl`. Đáp án tham chiếu có trang và trích đoạn nguồn. Không trình bày câu trả lời do người soạn tự viết thành đầu ra Gemini.
+Retrieval measurements are produced by `src.experiment`. Gemini outputs have actual API records in `results/generation.jsonl`. References include source pages and exact evidence spans. Authored reference answers must not be represented as Gemini outputs.
 
-Chấm nội dung do trợ lý AI hỗ trợ đối chiếu trực tiếp với paper và prompt. Đây không phải một thí nghiệm đánh giá mù bởi nhiều người. Trước khi nộp, các thành viên cần tự kiểm tra và xác nhận các nhãn chấm, các trích dẫn, phát biểu về paper, và chịu trách nhiệm đối với bài nộp. Không khẳng định nhóm đã làm bước này nếu chưa thực hiện.
+An AI assistant reviewed responses against the paper and actual prompts. This is not a blind, independent, multi-rater human evaluation. Translating the rationales into English does not constitute a new assessment; the numeric scores and raw experimental records are unchanged.
+
+Before submission, Phan Anh Khoa (24125059) and Bùi Trọng Thành (24125043) must independently verify the labels, citations, and claims and take responsibility for the submission. This document does not claim that this verification has already occurred.
+
+The current document revision is in English. The Canva design and files in `slides/` were left unchanged at the team's explicit request.

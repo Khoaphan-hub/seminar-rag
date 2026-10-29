@@ -1,34 +1,40 @@
-# Quy ước đánh giá
+# Evaluation Protocol
 
 ## Retrieval
 
-Q01–Q20 là 20 câu hỏi có đáp án trong paper. Viết câu hỏi, đáp án và gold evidence trước khi chạy xếp hạng. Không đưa đáp án hay câu hỏi vào corpus. Khung 2 phương pháp × 2 kích thước × 3 giá trị k được áp dụng đồng nhất.
+**Recall at top-k (Recall@k)** is ordinary recall evaluated using only the first k ranked results. The denominator is all relevant chunks, not k. For four relevant chunks with two found in top-3, Recall@3 = 2/4 = 0.5, whereas Precision@3 = 2/3. See [the worked explanation](RECALL_AT_K.md) and [TorchMetrics Retrieval Recall](https://lightning.ai/docs/torchmetrics/stable/retrieval/recall.html).
 
-Gold evidence là một hoặc nhiều khoảng ký tự trong bản text chuẩn hóa, được xác minh bằng phép so khớp chính xác. Một chunk relevant theo nhãn này nếu chứa trọn ít nhất một khoảng bằng chứng. Recall@k = số chunk relevant trong top-k / tổng số chunk relevant. Báo cáo lấy trung bình theo câu hỏi. Số lượng relevant có thể đổi theo chunk size, vì vậy báo cáo thêm các chỉ số ở cấp bằng chứng:
+Q01–Q20 are answerable from the source paper. Questions, reference answers, and selected gold evidence were written before ranking. Neither questions nor answers are indexed. Both retrievers use the same 2-method × 2-size × 3-k evaluation grid.
 
-- Hit@k: có lấy được trọn ít nhất một đoạn bằng chứng không.
-- Evidence recall@k: tỷ lệ các đoạn bằng chứng tham chiếu được phủ đầy đủ bởi hợp các chunk trong top-k.
-- All-evidence@k: có phủ đủ toàn bộ đoạn bằng chứng cần cho câu hỏi không.
+Gold evidence consists of character spans in normalized page text, verified through exact matching. A chunk is relevant under this definition if it contains at least one complete gold span. Recall@k is the number of relevant chunks in top-k divided by all relevant chunks. The reported macro score averages over 20 questions. Chunk size changes the number of relevant chunks, so evidence-level metrics are also reported:
 
-Gold là tập bằng chứng được chọn, không phải toàn bộ các diễn đạt tương đương. Ví dụ thông tin PyPI/CRAN xuất hiện cả trang 1 lẫn trang 2; việc không lấy đúng đoạn đã gán nhãn không luôn đồng nghĩa thiếu thông tin. Vì vậy đánh giá câu trả lời phải đọc cả context thật sự và PDF, không suy ra nhãn đúng/sai từ Recall. Overlap cũng tạo nhiều chunk chứa cùng một fact và có thể làm chunk recall thấp dù đã đủ bằng chứng. Bộ nhãn lưu nguyên để tái lập, không sửa theo phương pháp có kết quả tốt hơn.
+- **Hit@k:** whether at least one complete reference span is covered.
+- **Evidence recall@k:** fraction of reference spans fully covered by the union of top-k chunks.
+- **All-evidence@k:** whether every required reference span is covered; its aggregate is the fraction of questions meeting that criterion.
+
+Gold spans are selected references, not exhaustive labels of equivalent passages. PyPI/CRAN information appears on both pages 1 and 2, for example. Missing the selected span does not always mean the answer is absent. Generation review therefore reads the actual context and source, rather than deriving correctness from Recall. Overlap may create several chunks containing one fact, reducing chunk recall even when sufficient evidence was found. Gold labels are retained for reproducibility rather than adjusted to favor a method.
 
 ## Generation
 
-Ba điều kiện: không context, context TF-IDF, context embedding. Cùng 20 câu hỏi, cùng model và temperature. Mọi điều kiện đều nhận tên bài, Jin Zhu et al., năm 2022 và JMLR 23, 1–7 để không phạt baseline vì thiếu nhận diện paper. Hai RAG cùng chunk=192, k=3, prompt giống nhau ngoài các đoạn context. Prompt closed-book cho phép dùng kiến thức sẵn có và yêu cầu nói không biết khi không chắc, không giả vờ đã tra nguồn. Mỗi lượt là hội thoại độc lập; xoay thứ tự ba điều kiện theo câu. `generation_pilot.jsonl` là lượt thử trước khi thêm metadata nhận diện paper, bị loại khỏi kết quả chính.
+The three conditions are closed-book, TF-IDF context, and embedding context. They use the same 20 questions, model, and temperature. All receive the paper title, Jin Zhu et al., year 2022, and JMLR 23, pages 1–7, so the baseline is not penalized for an ambiguous paper identity. Both RAG conditions use chunk size 192 and k=3; their prompts differ only in retrieved passages. Closed-book instructions allow existing knowledge, request uncertainty when appropriate, and prohibit pretending to have checked sources. Calls are independent, with condition order rotated across questions.
 
-Chấm mỗi câu trên ba trục tách biệt:
+`generation_pilot.jsonl` predates the matched-metadata prompts and is excluded from the main results.
 
-1. **Correctness**: 1 nếu trả lời đầy đủ đúng các ý cốt lõi trong reference; 0.5 nếu chỉ có một phần ý cần thiết, diễn đạt còn quá rộng hoặc thêm giải thích thiếu chính xác nhưng vẫn thể hiện phần trọng tâm; 0 nếu dữ kiện đích sai (chẳng hạn phiên bản, con số, tên class), không trả lời hoặc từ chối. Đây là rubric có phán đoán; xem lý do từng mẫu trong `answer_review.csv`. Từ chối có thể an toàn nhưng không phải đáp án đúng cho câu vốn có đáp án.
-2. **Groundedness** (hai nhánh RAG): mọi khẳng định thực tế có được context đã đưa vào hỗ trợ không. Kiến thức đúng nhưng ngoài context vẫn là vượt bằng chứng. Từ chối hoàn toàn ghi `abstain`, không cộng như một câu factual đúng.
-3. **Citation support** (hai nhánh RAG): ID được dẫn có tồn tại trong prompt và đúng chunk có hỗ trợ nhận định được gắn trích dẫn không. Chỉ kiểm tra regex không đủ để chứng minh support.
+Evaluate three distinct aspects:
 
-Người chấm phải ghi lý do cho nhãn, đọc response và context thực. Điểm có AI hỗ trợ không được gọi là đánh giá con người độc lập. Không lấy độ giống từ với reference làm tiêu chí correctness duy nhất.
+1. **Correctness:** 1 for all core reference facts correctly answered; 0.5 for a partial answer, overbroad qualification, or imperfect explanation retaining the central point; 0 for an incorrect target fact, no answer, or abstention. This rubric involves judgment. See per-response rationales in `answer_review.csv`. A cautious abstention is not a correct answer to an answerable question.
+2. **Groundedness (RAG):** whether factual claims are supported by the actual supplied context. Even a true statement exceeds the supplied evidence if absent from that context. Complete abstentions are marked separately and are not counted as fully correct factual answers.
+3. **Citation support (RAG):** whether the cited ID occurs in the prompt and its passage supports the attached claim. Matching an ID with a regular expression does not establish semantic support or detect every malformed reference.
 
-## Phân loại lỗi
+Reviewers must read both response and context and record a rationale. AI-assisted review must not be called independent human evaluation. Lexical similarity to a reference is not sufficient to establish correctness.
 
-- Missing retrieval: không có đủ thông tin cần trong top-k.
-- Incorrect retrieval: các đoạn trả về nói về nội dung khác, gần từ khóa nhưng không trả lời câu hỏi.
-- Irrelevant citation: câu trả lời dẫn một chunk không chứng minh nội dung.
-- Beyond evidence: bổ sung một thông tin không có trong context, kể cả khi thông tin đó đúng trong toàn PDF.
+The English rationale field is `rationale_en`. The translation preserves scores, answer hashes, and the original Gemini records. `src/review_generation.py` exports fixed assisted annotations; running it does not perform a new blind evaluation.
 
-Một mẫu có thể thuộc nhiều nhóm. Trường hợp tạo có chủ đích để minh họa phải ghi rõ là tình huống giả lập, không được đếm như lỗi model thực đo.
+## Failure Categories
+
+- **Missing retrieval:** top-k lacks the required information.
+- **Incorrect retrieval:** returned passages match the topic or words but do not answer the question.
+- **Irrelevant citation:** the cited passage does not support the attached claim.
+- **Beyond evidence:** the answer adds information absent from its context, even if found elsewhere in the full PDF.
+
+A response can have multiple failure types. Constructed examples must be labeled hypothetical and excluded from counts of observed model failures.

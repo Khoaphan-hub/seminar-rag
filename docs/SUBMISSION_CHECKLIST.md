@@ -1,28 +1,32 @@
-# Đối chiếu yêu cầu S07
+# S07 Requirement Checklist
 
-| Yêu cầu | Vị trí |
+Team: **Phan Anh Khoa — 24125059** and **Bùi Trọng Thành — 24125043**.
+
+| Requirement | Location or status |
 |---|---|
-| Parametric/non-parametric; RAG vs fine-tuning/toàn prompt | report/main.tex, phần Background |
-| Pipeline và lỗi mỗi stage | Background, phân tích lỗi |
-| Corpus5–10trang có nguồn phù hợp | data/sources/abess_2022.pdf,7trang,CCBY4.0 |
-| 15–20câu có reference và nguồn | data/questions.json,20câu |
-| Retrieval và >=2chunksize hoặc2k | src/experiment.py,2methods×2sizes×3k |
-| Bảng Recall@k | results/retrieval_summary.csv,report/retrieval_table.tex |
-| Có/khôngretrieval cùngcâu | results/generation.jsonl,60response chính thức |
-| Định nghĩa mọi ký hiệu/giả định/ví dụ số | report/main.tex,Method |
-| Ví dụ question→chunks→answer/citation | Q08 trong report và slide9 |
-| >=3failure | Q06,Q13,Q09; thêmQ14,Q15 ở generation |
-| Verification và cập nhật nguồn | report/phần kiểm chứng và kết luận |
-| Paper Required,so sánhSequence/Token | report/Background vàMethod |
-| Báo cáo tiếngViệt,A4,6–10trang nội dung | report/main.tex vàPDF đãbiên dịch |
-| 8–12slide nội dung,15phút | bộCanva12slide vàslides/speaker_notes.md |
-| Q&A5phút,mỗingườitrảlời>=1câu | docs/PRESENTATION_AND_QA.md |
-| Tríchnguồn dữliệu,hình,bảng,phươngtrình,AI | bibliography,caption,THIRD_PARTY_NOTICES,AI_DISCLOSURE |
+| Parametric/non-parametric memory; RAG vs fine-tuning/full prompt | Report: Background |
+| Pipeline and stage-specific failures | Background and pipeline failure analysis |
+| Licensed corpus of 5–10 pages | `data/sources/abess_2022.pdf`, 7 pages, CC BY 4.0 |
+| 15–20 questions with references and sources | `data/questions.json`, 20 questions |
+| Retrieval with at least two chunk sizes or k values | `src/experiment.py`: 2 methods × 2 sizes × 3 k values |
+| Recall@k table | `results/retrieval_summary.csv`, `report/retrieval_table.tex` |
+| Same questions with/without retrieval | `results/generation.jsonl`, 60 final responses |
+| Symbols, ranges, assumptions, numerical example | Report: Method and Worked Example |
+| Question, chunks, answer, and citation example | Q08 in the report |
+| At least three analyzed failures | Q06, Q13, Q09, plus Q14/Q15 generation analysis |
+| Verification and source updates | Report: Verification, Updates, and Limitations |
+| Required paper and Sequence/Token comparison | Report: Background and Method |
+| A4 report, 6–10 content pages | English LaTeX/PDF edition requested by the team |
+| Team names and student IDs | Report title block and README |
+| Presentation: 8–12 slides, 15 minutes | Existing 12-slide Canva deck; slide revision deferred |
+| Five-minute Q&A, participation by every member | Two-person plan in `docs/PRESENTATION_AND_QA.md` |
+| Attribution for data, tables, diagrams, equations, and AI | Bibliography, captions, notices, AI disclosure |
 
-## Nhóm cần hoàn tất trước khi nộp
+## Before Submission
 
-- Điền tên/MSSV thành viên nếu lớp yêu cầu; hiện chưa có thông tin này.
-- Kiểm tra độc lập nhãn trong answer_review.csv, đặc biệt các mẫu điểm0,5 và inference_from_URL.
-- Tập đủ15phút và chia phần hỏiđáp để cả3người đều thamgia.
-- Xác nhận hạn nộp,kênh nộp,tênfile theo thông báo riêng của cô; PDFđề không ghi ngày cụ thể.
-- Repo/private vàCanva cần chủ sở hữu mời đúng các bạn cùngnhóm. Không gửi APIkey khi mời cộngtác.
+- Independently review `answer_review.csv`, particularly partial-credit labels and `inference_from_URL`.
+- Rehearse the 15-minute talk and ensure both members answer at least one question during Q&A.
+- Review the instructor's language and submission instructions against the team's requested English edition.
+- Confirm the deadline, submission channel, and filename requirements in the instructor's separate announcement; the assignment PDF gives no specific date.
+- Invite the intended collaborator separately to GitHub and Canva. Do not share API keys.
+- The current update deliberately leaves Canva and `slides/` unchanged. Existing slide notes may still describe three speakers; use the two-person plan in `docs/PRESENTATION_AND_QA.md` until a later slide revision.

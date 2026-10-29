@@ -1,19 +1,19 @@
-Đã thu đủ 60 response từ Gemini 3.5 Flash-Lite, mỗi điều kiện 20 câu, temperature 0. Cả ba nhánh nhận cùng tên bài, tác giả và năm; hai RAG dùng chunk 192 token, $k=3$. Đây là lượt chính thức sau khi sửa prompt của lượt pilot để tránh câu hỏi không có context bị hiểu nhầm sang paper khác. Lượt pilot được lưu riêng và không tính vào bảng dưới.
+The final run contains 60 responses from Gemini 3.5 Flash-Lite, with 20 per condition and temperature 0. All conditions receive the same paper title, authors, and year. Both RAG conditions use 192-token chunks and $k=3$. This matched-metadata run follows a pilot whose closed-book prompt could leave the paper identity ambiguous. Pilot outputs are stored separately and excluded below.
 
 \begin{table}[h]\centering\small
 \begin{tabular}{lrrrr}\toprule
-Điều kiện & Đúng đủ & Một phần & Từ chối & Điểm TB\\\midrule
-Không truy xuất & 5/20 & 6/20 & 0/20 & 0,400\\
-TF-IDF RAG & 16/20 & 2/20 & 2/20 & 0,850\\
-MiniLM RAG & 14/20 & 3/20 & 3/20 & 0,775\\\bottomrule
+Condition & Fully correct & Partial & Abstained & Mean score\\\midrule
+Closed-book & 5/20 & 6/20 & 0/20 & 0.400\\
+TF-IDF RAG & 16/20 & 2/20 & 2/20 & 0.850\\
+MiniLM RAG & 14/20 & 3/20 & 3/20 & 0.775\\\bottomrule
 \end{tabular}
-\caption{Đối chiếu có AI hỗ trợ trên response thực tế; chưa có đánh giá mù độc lập. Điểm: đầy đủ 1, một phần 0,5, sai/từ chối 0. Từ chối là một phần của nhóm không đạt, không phải cột độc lập để cộng với mọi nhóm khác.}
+\caption{AI-assisted review of actual responses, not an independent blind human evaluation. Scores: complete 1, partial 0.5, wrong/abstained 0. Abstentions are a subset of zero-score answers; the displayed count columns do not enumerate every outcome.}
 \end{table}
 
-Nhóm chấm yêu cầu giữ đúng đối tượng, số liệu và điều kiện của reference. Mỗi nhãn có lý do cùng hash của response trong \texttt{answer\_review.csv}. Điểm một phần có yếu tố phán đoán: Q19 nêu đúng phạm vi cancer nhưng vẫn trả lời không đủ thông tin thay vì phủ định rõ tính phổ quát. Vì vậy các thành viên cần xác minh lại nhãn trước khi nộp.
+The rubric checks the target entities, numbers, and qualifications in the reference. Each label has a rationale and response hash in \texttt{answer\_review.csv}. Partial credit involves judgment: Q19 identifies the cancer-specific scope but still states that information is insufficient instead of explicitly rejecting a universal claim. Both team members should independently verify the labels before submission.
 
-\textbf{Sửa đáp án sai nhờ context.} Q16: closed-book trả 100 test sets, trong khi PDF ghi 20; hai RAG trả 20 và dẫn \texttt{s192-p4-t504}. Q06: closed-book trả R 3.5.0 sai, MiniLM trả R $\ge3.1.0$ đúng, TF-IDF từ chối vì thiếu đoạn cần thiết. Chỉ số correctness không nên cộng điểm cho từ chối dù từ chối có thể hợp lý về grounding.
+\textbf{Context correcting an error.} For Q16, closed-book returns 100 test sets, whereas the PDF states 20. Both RAG responses return 20 and cite \texttt{s192-p4-t504}. For Q06, closed-book incorrectly gives R 3.5.0; MiniLM correctly gives R $\ge3.1.0$; TF-IDF abstains because the necessary passage is absent. Abstention receives no correctness credit even when it is appropriate for the supplied evidence.
 
-\textbf{Đúng nội dung nhưng thiếu citation.} Q14 của MiniLM trả đúng \texttt{print, coef, plot} nhưng không dẫn nguồn. Cả 40 response RAG không có ID sai dạng được quan sát ở lượt chính thức; điều này chỉ là kiểm tra cấu trúc, không chứng minh mọi citation đúng nghĩa. Ở Q07 MiniLM suy ra dịch vụ kiểm tra code từ URL GitHub Actions, trong khi context không chứa câu mô tả continuous integration; cần ghi đây là suy luận từ URL.
+\textbf{Correct content with a missing citation.} MiniLM's Q14 response correctly lists \texttt{print, coef, plot} but gives no citation. Among the 40 final RAG responses, the structural check finds no extracted chunk ID outside the supplied set. This does not establish semantic support or detect every possible malformed citation. For Q07, MiniLM infers the code-checking service from a GitHub Actions URL, while the context lacks an explicit continuous-integration statement; the review records this as inference from a URL.
 
-\textbf{Giới hạn gold và cách dùng context.} Q03 MiniLM trả đúng PyPI/CRAN từ URL trang 2 dù gold chọn ở trang 1. Q15 lại từ chối AUC mặc dù đầu một chunk còn số 0.9663829492654472 sát caption Figure 3; do phần code bị tách, model diễn giải nhầm sang bảng benchmark. Hai trường hợp cho thấy phải đọc context thật, không suy ra chất lượng response trực tiếp từ selected-span recall.
+\textbf{Gold coverage and context use.} MiniLM answers Q03 correctly from page-2 PyPI/CRAN URLs, although the selected gold is on page 1. For Q15 it abstains on AUC even though a chunk begins with 0.9663829492654472 near the Figure 3 caption. The code example is split, and the response mistakenly explains the gap in terms of the benchmark table. These cases show why actual context must be read rather than inferring response quality from selected-span recall.

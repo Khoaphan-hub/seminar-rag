@@ -1,32 +1,33 @@
-# Kịch bản và phân công
+# Team Presentation Plan and Q&A
 
-Thay Người A/B/C bằng tên nhóm khi đã thống nhất. Đây là đề xuất phân công, chưa xác nhận tên người trình bày.
+| Presenter | Student ID | Suggested slides | Time | Focus |
+|---|---|---|---|---|
+| Phan Anh Khoa | 24125059 | 1–6 | 7 min 30 sec | Research question, memory, pipeline, equations, corpus, retrievers |
+| Bùi Trọng Thành | 24125043 | 7–12 | 7 min 30 sec | Metrics, retrieval/generation results, examples, failures, verification |
 
-| Người | Slide | Thời gian | Việc cần kiểm tra |
-|---|---|---|---|
-| A | 1–4 | 5 phút | Câu hỏi nghiên cứu, hai loại memory, pipeline, paper và công thức |
-| B | 5–8 | 5 phút | Corpus/license, hai retriever, metrics, bảng kết quả |
-| C | 9–12 | 5 phút | Ví dụ generation, lỗi, verification, kết luận |
+This is a proposed allocation for two members, not a claim of completed work or rehearsal. Suggested slide durations are 60, 75, 75, 90, 60, 90 seconds for slides 1–6, and 75, 75, 75, 90, 75, 60 seconds for slides 7–12. Total: 900 seconds.
 
-Mỗi người cần trả lời ít nhất một câu trong 5 phút hỏi đáp. Tập chạy demo trước và mở sẵn nhật ký đã lưu khi API miễn phí không khả dụng tại lớp.
+Both members should answer at least one question during the five-minute Q&A. Rehearse the demo and keep saved response logs available if the free API or classroom network is unavailable.
 
-# Câu hỏi phản biện và ý trả lời
+The Canva deck and `slides/` files are intentionally unchanged in this document revision. This two-person plan supersedes the old A/B/C speaker assignment for rehearsal; the slide wording and notes can be updated later.
 
-1. **RAG có loại bỏ hallucination không?** Không có bảo đảm. Lỗi có thể do nguồn, retrieval, prompt, generation hoặc citation. Thí nghiệm nhỏ chỉ minh họa các cơ chế, không đo được toàn bộ các dạng hallucination.
-2. **Vì sao TF-IDF tốt hơn MiniLM ở bộ thử này?** Các câu hỏi có nhiều tên API và thuật ngữ trùng paper; MiniLM nhỏ và không được fine-tune cho corpus. Đây là diễn giải hợp lý, chưa phải kết luận nhân quả. Muốn kiểm chứng phải có bộ paraphrase độc lập và thêm model.
-3. **TF-IDF cũng dùng cosine à?** Có. Vector TF-IDF thưa và embedding đặc đều có thể so bằng cosine; khác nhau ở cách biểu diễn.
-4. **Tại sao chunk theo token?** Để kiểm soát đầu vào embedding 256 token; 96/192 cộng token đặc biệt đều không bị cắt. Token ở đây theo tokenizer MiniLM, không phải số ký tự hay token tính phí Gemini.
-5. **Recall@k có phải accuracy không?** Không. Recall đo truy xuất theo tập relevant. Accuracy đo nội dung câu trả lời. Còn groundedness đo sự hỗ trợ của context.
-6. **Nếu tăng k có luôn tốt hơn?** Retrieval recall không giảm khi top-k lồng nhau, nhưng generation có thể bị nhiễu và tốn context hơn. Thí nghiệm sinh chỉ cố định k=3 nên chưa kết luận về ảnh hưởng k lên generation.
-7. **Vì sao RAG-Sequence khác việc nối ba chunk vào prompt?** RAG-Sequence trong paper cộng xác suất của toàn chuỗi theo các tài liệu tiềm ẩn; demo chỉ nối context rồi gọi API. Không có truy cập xác suất chuỗi để tái hiện phép marginalization.
-8. **RAG-Token có tìm kiếm lại ở mỗi token không?** Công thức cho phép tài liệu tiềm ẩn thay đổi theo token trong tập top-k đã truy xuất. Không có nghĩa bắt buộc chạy lại tìm kiếm mỗi token.
-9. **RAG có thể fine-tune không?** Có. Paper gốc huấn luyện query encoder và generator; giữ document encoder/index cố định. Demo dùng retriever và generator sẵn có.
-10. **Non-parametric có nghĩa retriever không có tham số?** Không. Kho kiến thức ngoài trọng số là non-parametric memory; query/document encoder vẫn có tham số học được.
-11. **Vì sao giấy phép paper khác thư viện?** CC BY 4.0 cho bài abess; GPL-3 cho source code abess. Corpus là bài nghiên cứu, không phải mã thư viện.
-12. **Có data leakage không?** Không đưa câu hỏi/reference vào index. Tuy nhiên paper công khai có thể đã ở dữ liệu huấn luyện LLM; không kiểm soát được. Vì vậy closed-book là baseline thực dụng, không phải phép đo kiến thức hoàn toàn chưa thấy.
-13. **Gold có đầy đủ không?** Chỉ gán một tập đoạn bằng chứng tham chiếu. Các đoạn tương đương có thể bị bỏ sót; ghi nhận đây là hạn chế và đọc context thủ công khi chấm generation.
-14. **Tại sao không dùng Chroma cũ?** Corpus chỉ vài chục chunk, tìm toàn bộ bằng tích vô hướng chuẩn hóa là đủ và dễ kiểm tra cosine. Không đánh đồng distance mặc định của vectorstore cũ với cosine.
-15. **Cập nhật tài liệu ra sao?** Lưu version/hash; phát hiện file đổi; trích xuất/chunk/index lại; chạy regression set; kiểm tra citation còn trỏ đúng trang/đoạn. Với câu hỏi lịch sử phải giữ snapshot 2022.
-16. **Ví dụ số RAG-Sequence lấy từ model không?** Không. Là số giả định phục vụ giải thích phương trình; log API không trả các xác suất điều kiện đó.
-17. **Ai chấm câu trả lời?** Có AI hỗ trợ đối chiếu trực tiếp nguồn; chưa có đánh giá mù bởi nhiều người. Các thành viên cần kiểm tra lại nhãn trước khi nộp.
-18. **Có thể nói model không có hallucination nếu 20/20 đúng?** Không. Chỉ nói không quan sát lỗi theo rubric trên 20 mẫu ở lần chạy này; không chứng minh bảo đảm cho câu hỏi khác.
+## Discussion Questions and Suggested Answers
+
+1. **Does RAG eliminate hallucination?** No guarantee follows from retrieval alone. Failures can originate in the source, extraction, retrieval, prompting, generation, or citation. This small experiment illustrates mechanisms rather than measuring all possible hallucinations.
+2. **Why does TF-IDF outperform MiniLM here?** Many questions contain exact API names and paper-specific terms. MiniLM is small and not adapted to this corpus. This is a plausible interpretation, not a causal conclusion. Independent paraphrases and additional models would help test it.
+3. **Does TF-IDF also use cosine?** Yes. Both sparse TF-IDF vectors and dense embeddings can be compared using cosine; their representations differ.
+4. **Why count tokens when chunking?** MiniLM accepts at most 256 tokens. Both selected sizes, including special tokens, fit without truncation. These are MiniLM WordPiece tokens, not characters or Gemini billing tokens.
+5. **Is Recall@k answer accuracy?** No. Recall evaluates retrieval against relevant evidence labels. Correctness evaluates answer content; groundedness evaluates support from actual context.
+6. **Does increasing k always help?** Recall cannot decrease for nested top-k sets, but more context can add noise and cost. Generation is evaluated only at k=3 here, so its response to changing k was not measured.
+7. **How does RAG-Sequence differ from concatenating three chunks?** The paper marginalizes the probability of an entire output sequence over latent documents. The demo concatenates context and calls an API; it does not reproduce that marginalization.
+8. **Does RAG-Token search again for every token?** Its latent document can vary across token positions within the retrieved set. The equation does not require running a new search each time.
+9. **Can RAG be fine-tuned?** Yes. Lewis et al. train the query encoder and generator while keeping the document encoder and index fixed. This demo uses pretrained components.
+10. **Does non-parametric mean the retriever has no parameters?** No. The external knowledge store is non-parametric memory, but its query and document encoders can have learned parameters.
+11. **Why are the article and software licenses different?** CC BY 4.0 applies to the abess article; GPL-3 applies to the abess software. Our corpus is the article.
+12. **Is there data leakage?** Questions and answers are not indexed. However, the public paper may have been part of the LLM's training data, which we cannot inspect. Closed-book is a practical baseline, not a test of entirely unseen knowledge.
+13. **Is the gold set exhaustive?** No. Equivalent passages may fall outside selected spans. This limitation is disclosed, and generation review inspects actual context.
+14. **Why not use the original Chroma store?** With a few dozen chunks, exhaustive normalized dot products are sufficient and easy to inspect. The prototype's default distance should not be assumed identical to the experiment's cosine.
+15. **How should documents be updated?** Track versions and hashes, rebuild extraction/chunks/index after changes, remove stale chunks, and rerun regression checks. Historical questions retain the 2022 snapshot.
+16. **Are the RAG-Sequence example probabilities measured?** No. They are explicitly hypothetical teaching values. The API logs do not provide those conditional sequence probabilities.
+17. **Who graded the answers?** An AI assistant checked them against sources and prompts. There is no independent blind multi-rater evaluation yet. Both team members must verify the labels.
+18. **Would 20/20 correct establish a hallucination-free model?** No. It would describe only the observed questions under the stated rubric and run conditions, not a guarantee for other questions.

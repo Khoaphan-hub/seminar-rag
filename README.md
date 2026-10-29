@@ -1,23 +1,31 @@
 # CS420 S07 — Retrieval-Augmented Generation
 
-Seminar tiếng Việt về truy xuất tài liệu và kiểm chứng câu trả lời. Bộ thử nghiệm tiếng Anh dùng bài **abess: A Fast Best-Subset Selection Library in Python and R**, Zhu et al. (2022), 7 trang, **CC BY 4.0**.
+An English seminar report on document retrieval and evidence verification. The experiment uses **abess: A Fast Best-Subset Selection Library in Python and R**, Zhu et al. (2022), seven pages under **CC BY 4.0**.
 
-## Thành phần
+| Team member | Student ID |
+|---|---|
+| Phan Anh Khoa | 24125059 |
+| Bùi Trọng Thành | 24125043 |
 
-**Báo cáo đã biên dịch:** [PDF 9 trang (8 trang nội dung + 1 trang tham khảo)](report/main.pdf). **Slide chỉnh sửa trên Canva:** https://canva.link/abw5shp7wrkofnm
+## Deliverables
 
-- `report/main.tex`: báo cáo LaTeX, biên dịch bằng XeLaTeX.
-- `slides/`: nội dung slide, ghi chú thuyết trình và liên kết Canva.
-- `data/questions.json`: 20 câu hỏi, đáp án tham chiếu, trang và đoạn bằng chứng.
-- `data/sources/`: PDF nguồn, giấy phép và mã kiểm tra SHA-256.
-- `src/`: chuẩn bị dữ liệu, truy xuất TF-IDF/embedding và sinh câu trả lời Gemini.
-- `results/`: kết quả thực đo và nhật ký từng câu; không phải kết quả chép từ paper.
-- `docs/`: phương pháp đánh giá, câu hỏi phản biện, phân công và checklist.
-- `RAG/`: mã dự án ban đầu của nhóm, làm cơ sở cho cách dùng MiniLM/Gemini. Pipeline đánh giá chuẩn ở `src/`.
+**Compiled report:** [PDF](report/main.pdf). **Editable source:** [LaTeX](report/main.tex).
 
-## Chạy lại
+**Existing Canva slides:** https://canva.link/abw5shp7wrkofnm
 
-Python 3.11 trở lên. Tạo môi trường riêng:
+The report and supporting documents are in English. The Canva deck and the entire `slides/` directory remain unchanged at the team's request; their translation is deferred.
+
+- `report/`: report source, PDF, and experiment tables.
+- `data/questions.json`: 20 English questions, reference answers, source pages, and evidence spans.
+- `data/sources/`: licensed source PDF and provenance manifest.
+- `src/`: extraction, TF-IDF/embedding retrieval, Gemini generation, and review exports.
+- `results/`: measured results and per-question logs, distinct from published paper results.
+- `docs/`: evaluation rubric, AI disclosure, team presentation plan, Q&A, and submission checklist.
+- `RAG/`: the original prototype; the controlled experiment is implemented in `src/`.
+
+## Reproduce the experiment
+
+Use Python 3.11 or later and a dedicated environment:
 
 ```powershell
 python -m venv .venv
@@ -26,23 +34,45 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m src.experiment
 ```
 
-Lần đầu embedding sẽ tải `sentence-transformers/all-MiniLM-L6-v2`. Nếu đã có cache, thêm `--offline` vào lệnh cuối. Máy đang chuẩn bị bài có thể dùng `RAG\.venv\Scripts\python.exe` thay cho `.venv\Scripts\python.exe`.
+The first embedding run downloads `sentence-transformers/all-MiniLM-L6-v2`. Add `--offline` to the last command if the model is already cached. On the preparation machine, `RAG\.venv\Scripts\python.exe` is also available. `requirements-lock.txt` records the installed environment used for the original experiment, including prototype dependencies.
 
-Hai phương pháp dùng cùng chunk 96/192 **WordPiece token**, overlap 24, cosine similarity, k=1/3/5. Tìm chính xác trên toàn bộ chunk, không dùng chỉ mục xấp xỉ. Điểm cosine càng cao càng tương đồng; không được đọc nó như xác suất câu trả lời đúng.
+Both retrievers use identical chunks of 96/192 **WordPiece tokens**, 24-token overlap, cosine similarity, and k=1/3/5. Search is exhaustive. Higher cosine means greater similarity, not a calibrated probability of answer correctness.
 
-## Gemini
+Inspect a question without an API call:
 
-Tạo `.env` theo `.env.example`, đặt key miễn phí của chính bạn. Nếu `.env` ở gốc không có, chương trình dùng `RAG/.env`. Key không được ghi vào kết quả hay Git.
+```powershell
+.\.venv\Scripts\python.exe -m src.demo --method tfidf --question "What test coverage is reported for Python and R?" --prompt
+```
+
+## Gemini generation
+
+Create a local `.env` based on `.env.example` and set your own API key. The generator also reads `RAG/.env`; values in the root `.env` take precedence. Credentials are excluded from results and Git.
 
 ```powershell
 .\.venv\Scripts\python.exe -m src.generate --limit 60 --delay 10
 ```
 
-Mỗi câu có ba lượt độc lập: closed-book, TF-IDF RAG, embedding RAG. Cấu hình RAG cố định trước khi xem kết quả: 192 token, k=3. Mỗi lượt có temperature=0, tối đa 2048 output token. Chương trình ghi từng kết quả vào JSONL, bỏ qua lượt đã thành công khi chạy lại, và dừng nếu có lỗi API/quota. `--limit` giới hạn lượt mới, không phải số câu hỏi. Không tự chuyển sang gói trả phí.
+Each question has three independent conditions: closed-book, TF-IDF RAG, and embedding RAG. All receive the same paper-identifying metadata. Both RAG conditions use 192-token chunks and k=3, selected before inspecting results. Temperature is 0, with at most 2048 output tokens. Successful records are saved to JSONL and skipped on resumption when question, condition, model, and prompt hash match. The program stops on API/quota errors. `--limit` caps new calls rather than questions. It does not automatically switch to a paid plan.
 
-Không sửa model giữa một phép so sánh. Model thí nghiệm: `gemini-3.5-flash-lite`; 3.8 bị timeout và 2.5 Flash-Lite bị Google từ chối cho người dùng mới. Không coi các lần lỗi là câu trả lời sai.
+The final experiment uses `gemini-3.5-flash-lite`. Earlier 3.8 requests timed out, and 2.5 Flash-Lite requests were rejected for the account. These failures are not scored as wrong answers. Do not change models within a comparison.
 
-## Biên dịch báo cáo
+## Evaluation and checks
+
+**Recall@k means recall among the first k ranked results.** See [the definition and worked example](docs/RECALL_AT_K.md). The assignment's notation is valid; the experiment retains it and makes the cutoff explicit.
+
+There are 240 retrieval records (20 questions × 2 methods × 2 sizes × 3 k values) and 60 final Gemini responses. Assisted review found 5/20 fully correct closed-book answers, 16/20 with TF-IDF, and 14/20 with MiniLM. Both team members must independently review `results/answer_review.csv`. The English rationale column is `rationale_en`; scores and original responses are preserved.
+
+`generation_pilot.jsonl` is excluded from the final results because its baseline prompt lacked matching paper-identifying metadata.
+
+```powershell
+.\.venv\Scripts\python.exe -m src.review_generation
+.\.venv\Scripts\python.exe -m src.build_tables
+python -m unittest discover -s tests -v
+```
+
+The review exporter contains fixed, editable assisted annotations. Rerunning it exports those annotations; it does not perform a new independent evaluation and will overwrite manual edits to the CSV. Make any agreed label changes in the exporter as well.
+
+## Compile the report
 
 ```powershell
 cd report
@@ -50,20 +80,18 @@ xelatex -interaction=nonstopmode -halt-on-error main.tex
 xelatex -interaction=nonstopmode -halt-on-error main.tex
 ```
 
-Dùng XeLaTeX với Times New Roman. Khi dùng Overleaf/Linux chưa có font này, đổi sang font hỗ trợ tiếng Việt như TeX Gyre Termes. Kết quả thực nghiệm được đưa vào `report/retrieval_table.tex` và `report/generation_results.tex`.
+XeLaTeX uses Times New Roman and Consolas. On a system without these fonts, choose installed alternatives supporting the authors' Vietnamese names, such as TeX Gyre Termes and Latin Modern Mono. Measured retrieval and generation tables are in `retrieval_table.tex` and `generation_results.tex`.
 
-## Cộng tác
+## Collaboration
 
-Repo private: https://github.com/Khoaphan-hub/seminar-rag
+Private repository: https://github.com/Khoaphan-hub/seminar-rag
 
-Chủ repo thêm thành viên ở **Settings → Collaborators → Add people**. Mỗi bạn tạo nhánh riêng, ví dụ `report-review`, `slides-review`, `evaluation-review`, rồi mở pull request để ghép bài. Chỉ một người cập nhật số liệu sinh tự động mỗi lần. Trước khi nộp, ba thành viên cần đọc lại đáp án và tự luyện trình bày/hỏi đáp.
+The owner can invite a collaborator through **Settings → Collaborators → Add people**. Work on separate branches and use pull requests. Only one person should regenerate shared results at a time. Canva access is managed separately through **Share**.
 
-Không commit `.env`, môi trường Python, model weights, vectorstore hoặc dữ liệu cá nhân. PDF đề và hai paper giáo viên cung cấp vẫn giữ tại máy; repo lưu thông tin trích dẫn thay vì tự cấp lại giấy phép cho các tài liệu đó.
+Do not commit API keys, Python environments, model weights, or vector-store caches. The instructor's assignment PDF and foundational papers remain local; citations are provided without assigning them a new license.
 
-## Giới hạn
+## Limitations
 
-Đã hoàn tất 240 cấu hình truy xuất theo câu hỏi (20 × 2 phương pháp × 2 kích thước × 3 giá trị k) và 60 câu trả lời Gemini chính thức. Chấm có AI hỗ trợ cho thấy số câu trả lời đầy đủ lần lượt là 5/20 (closed-book), 16/20 (TF-IDF) và 14/20 (MiniLM); nhóm cần kiểm tra độc lập nhãn trong `results/answer_review.csv`. `generation_pilot.jsonl` là lượt thử ban đầu, đã loại khỏi kết quả vì prompt baseline chưa có cùng metadata nhận diện paper.
+This is a descriptive study with 20 deliberately authored questions, one paper, one small embedding model, and one generation per condition. Selected gold spans do not exhaust equivalent evidence. Retrieval recall is not LLM accuracy, and these results do not establish a general lexical-versus-dense ranking. Public-paper training contamination cannot be ruled out.
 
-20 câu hỏi do người chuẩn bị chủ động thiết kế, một paper, một embedding nhỏ, một lần sinh mỗi điều kiện. Gold là tập đoạn tham chiếu đã chọn, không bao quát mọi diễn đạt tương đương trong paper. Các tỷ lệ truy xuất không phải accuracy của LLM. Không suy rộng kết quả thành thứ hạng chung giữa TF-IDF và embedding.
-
-Xem `THIRD_PARTY_NOTICES.md` và `docs/AI_DISCLOSURE.md` để biết nguồn và việc sử dụng AI.
+See `THIRD_PARTY_NOTICES.md`, `docs/EVALUATION.md`, and `docs/AI_DISCLOSURE.md`.
