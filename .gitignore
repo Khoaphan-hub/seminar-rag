@@ -15,6 +15,5 @@ tmp/
 *.synctex.gz
 report/build-output.txt
 Papers/
-RAG/data/
 S07_Seminar_RAG.pdf
 !.env.example

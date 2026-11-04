@@ -21,7 +21,34 @@ The report and supporting documents are in English. The Canva deck and the entir
 - `src/`: extraction, TF-IDF/embedding retrieval, Gemini generation, and review exports.
 - `results/`: measured results and per-question logs, distinct from published paper results.
 - `docs/`: evaluation rubric, AI disclosure, team presentation plan, Q&A, and submission checklist.
-- `RAG/`: the original prototype; the controlled experiment is implemented in `src/`.
+
+## One shared RAG pipeline, two retrievers
+
+```text
+src/
+  prepare.py           PDF extraction and normalization
+  retrievers/
+    tfidf.py           Lexical TF-IDF + cosine similarity
+    embedding.py       Dense MiniLM + cosine similarity
+    __init__.py        Retriever selection and shared stable top-k ranking
+  demo.py              Inspect either retriever and its context/prompt
+  experiment.py        Shared chunks, both retrievers, retrieval evaluation
+  generate.py          Gemini: closed-book / TF-IDF RAG / embedding RAG
+  review_generation.py Answer review export
+  build_tables.py      Report table export
+tests/                 Evidence checks and retrieval regression checks
+```
+
+The main data flow is PDF → pages → identical chunks → TF-IDF **or** MiniLM
+→ top-k context → shared prompt → Gemini. The controlled generator reads the
+saved retrieval records so every generated answer is bound to a recorded context.
+Closed-book generation omits retrieved context. The demo displays retrieval and
+optionally the prompt; it does not call Gemini.
+
+Use the root `.venv` for current work. In VS Code, select
+`.venv/Scripts/python.exe` with **Python: Select Interpreter** if another
+interpreter was previously selected. This repository is self-contained; the
+original prototype is stored outside the Seminar directory and is not required.
 
 ## Reproduce the experiment
 
@@ -34,7 +61,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m src.experiment
 ```
 
-The first embedding run downloads `sentence-transformers/all-MiniLM-L6-v2`. Add `--offline` to the last command if the model is already cached. On the preparation machine, `RAG\.venv\Scripts\python.exe` is also available. `requirements-lock.txt` records the installed environment used for the original experiment, including prototype dependencies.
+The first embedding run downloads `sentence-transformers/all-MiniLM-L6-v2`. Add `--offline` to the last command if the model is already cached. `requirements-lock.txt` records the historical environment used for the original experiment, including extra prototype dependencies; `requirements.txt` lists the seminar pipeline's direct dependencies.
 
 Both retrievers use identical chunks of 96/192 **WordPiece tokens**, 24-token overlap, cosine similarity, and k=1/3/5. Search is exhaustive. Higher cosine means greater similarity, not a calibrated probability of answer correctness.
 
@@ -42,11 +69,12 @@ Inspect a question without an API call:
 
 ```powershell
 .\.venv\Scripts\python.exe -m src.demo --method tfidf --question "What test coverage is reported for Python and R?" --prompt
+.\.venv\Scripts\python.exe -m src.demo --method embedding --question "What test coverage is reported for Python and R?" --prompt
 ```
 
 ## Gemini generation
 
-Create a local `.env` based on `.env.example` and set your own API key. The generator also reads `RAG/.env`; values in the root `.env` take precedence. Credentials are excluded from results and Git.
+Create a local `.env` in the Seminar root based on `.env.example` and set your own API key. The generator reads only this local configuration file (or existing environment variables). Credentials are excluded from results and Git.
 
 ```powershell
 .\.venv\Scripts\python.exe -m src.generate --limit 60 --delay 10
@@ -67,7 +95,7 @@ There are 240 retrieval records (20 questions × 2 methods × 2 sizes × 3 k val
 ```powershell
 .\.venv\Scripts\python.exe -m src.review_generation
 .\.venv\Scripts\python.exe -m src.build_tables
-python -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
 The review exporter contains fixed, editable assisted annotations. Rerunning it exports those annotations; it does not perform a new independent evaluation and will overwrite manual edits to the CSV. Make any agreed label changes in the exporter as well.

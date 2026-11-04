@@ -2,9 +2,9 @@
 import argparse, csv, hashlib, json, platform, time
 from pathlib import Path
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sentence_transformers import SentenceTransformer
 from .prepare import ROOT
+from .retrievers import create_retriever, top_chunks
 
 def load(path): return json.loads((ROOT/path).read_text(encoding='utf-8'))
 def save(path, obj):
@@ -48,16 +48,14 @@ def main():
         assert max(c['tokens'] for c in chunks)+2<=model.max_seq_length
         save(f'data/processed/chunks_{size}.json',chunks)
         texts=[c['text'] for c in chunks]
-        tf=TfidfVectorizer(lowercase=True,stop_words='english',ngram_range=(1,2),norm='l2',smooth_idf=True)
-        matrix=tf.fit_transform(texts)
-        sims={'tfidf':(tf.transform([q['question'] for q in qs])@matrix.T).toarray(),
-              'embedding':query_emb@model.encode(texts,normalize_embeddings=True).T}
+        questions=[q['question'] for q in qs]
+        sims={method:create_retriever(method,texts,model=model).score(questions)
+              for method in ['tfidf','embedding']}
         for method,scores in sims.items():
             for k in [1,3,5]:
                 stats=[]
                 for qi,q in enumerate(qs):
-                    ix=np.argsort(-scores[qi],kind='stable')[:k]
-                    retrieved=[dict(chunks[i],score=float(scores[qi,i])) for i in ix]
+                    retrieved=top_chunks(chunks,scores[qi],k)
                     spans=gold[q['id']]
                     support=[covers(retrieved,s) for s in spans]
                     relevant={c['id'] for c in chunks if any(covers([c],s) for s in spans)}

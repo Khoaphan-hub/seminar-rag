@@ -17,7 +17,7 @@ def build_prompt(question, retrieved=None):
 
 def main():
     p=argparse.ArgumentParser(); p.add_argument('--limit',type=int,default=60);p.add_argument('--delay',type=float,default=15);args=p.parse_args()
-    load_dotenv(ROOT/'RAG/.env');load_dotenv(ROOT/'.env',override=True)
+    load_dotenv(ROOT/'.env',override=True)
     key=os.getenv('GEMINI_API_KEY');model=os.getenv('GEMINI_MODEL','gemini-3.5-flash-lite')
     if not key:raise SystemExit('GEMINI_API_KEY is missing. Configure .env locally.')
     qs=json.loads((ROOT/'data/questions.json').read_text(encoding='utf-8'))
