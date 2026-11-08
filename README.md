@@ -11,9 +11,9 @@ An English seminar report on document retrieval and evidence verification. The e
 
 **Compiled report:** [PDF](report/main.pdf). **Editable source:** [LaTeX](report/main.tex).
 
-**Existing Canva slides:** https://canva.link/abw5shp7wrkofnm
+**Slides:** content planning is deferred; the local `slides/` folder is currently empty.
 
-The report and supporting documents are in English. The Canva deck and the entire `slides/` directory remain unchanged at the team's request; their translation is deferred.
+The report and supporting documents are in English. The previous local slide materials have been removed at the team's request.
 
 - `report/`: report source, PDF, and experiment tables.
 - `data/questions.json`: 20 English questions, reference answers, source pages, and evidence spans.
@@ -88,7 +88,7 @@ The final experiment uses `gemini-3.5-flash-lite`. Earlier 3.8 requests timed ou
 
 **Recall@k means recall among the first k ranked results.** See [the definition and worked example](docs/RECALL_AT_K.md). The assignment's notation is valid; the experiment retains it and makes the cutoff explicit.
 
-There are 240 retrieval records (20 questions × 2 methods × 2 sizes × 3 k values) and 60 final Gemini responses. Assisted review found 5/20 fully correct closed-book answers, 16/20 with TF-IDF, and 14/20 with MiniLM. Both team members must independently review `results/answer_review.csv`. The English rationale column is `rationale_en`; scores and original responses are preserved.
+There are 240 retrieval records (20 questions × 2 methods × 2 sizes × 3 k values) and 60 final Gemini responses. Assisted review found 5/20 fully correct closed-book answers, 16/20 with TF-IDF, and 14/20 with MiniLM. Phan Anh Khoa (24125059) has read and accepted the assisted evaluation without score changes. This is not blind or independent multi-rater validation; see `docs/REVIEW_SIGNOFF.md`. The English rationale column is `rationale_en`; scores and original responses are preserved.
 
 `generation_pilot.jsonl` is excluded from the final results because its baseline prompt lacked matching paper-identifying metadata.
 
@@ -114,7 +114,7 @@ XeLaTeX uses Times New Roman and Consolas. On a system without these fonts, choo
 
 Private repository: https://github.com/Khoaphan-hub/seminar-rag
 
-The owner can invite a collaborator through **Settings → Collaborators → Add people**. Work on separate branches and use pull requests. Only one person should regenerate shared results at a time. Canva access is managed separately through **Share**.
+The owner can invite a collaborator through **Settings → Collaborators → Add people**. Work on separate branches and use pull requests. Only one person should regenerate shared results at a time.
 
 Do not commit API keys, Python environments, model weights, or vector-store caches. The instructor's assignment PDF and foundational papers remain local; citations are provided without assigning them a new license.
 

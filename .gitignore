@@ -17,3 +17,6 @@ report/build-output.txt
 Papers/
 S07_Seminar_RAG.pdf
 !.env.example
+
+# XeLaTeX intermediate output
+*.xdv

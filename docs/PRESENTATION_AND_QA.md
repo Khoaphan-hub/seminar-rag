@@ -9,7 +9,7 @@ This is a proposed allocation for two members, not a claim of completed work or 
 
 Both members should answer at least one question during the five-minute Q&A. Rehearse the demo and keep saved response logs available if the free API or classroom network is unavailable.
 
-The Canva deck and `slides/` files are intentionally unchanged in this document revision. This two-person plan supersedes the old A/B/C speaker assignment for rehearsal; the slide wording and notes can be updated later.
+The local `slides/` folder is empty. The allocation above is provisional; slide content will be discussed later. The Q&A below remains useful for studying the report.
 
 ## Discussion Questions and Suggested Answers
 
@@ -29,5 +29,5 @@ The Canva deck and `slides/` files are intentionally unchanged in this document 
 14. **Why not use the original Chroma store?** With a few dozen chunks, exhaustive normalized dot products are sufficient and easy to inspect. The prototype's default distance should not be assumed identical to the experiment's cosine.
 15. **How should documents be updated?** Track versions and hashes, rebuild extraction/chunks/index after changes, remove stale chunks, and rerun regression checks. Historical questions retain the 2022 snapshot.
 16. **Are the RAG-Sequence example probabilities measured?** No. They are explicitly hypothetical teaching values. The API logs do not provide those conditional sequence probabilities.
-17. **Who graded the answers?** An AI assistant checked them against sources and prompts. There is no independent blind multi-rater evaluation yet. Both team members must verify the labels.
+17. **Who graded the answers?** An AI assistant checked them against sources and prompts. There is no independent blind multi-rater evaluation yet. Phan Anh Khoa has read and accepted the labels. A separate review by Bùi Trọng Thành has not been confirmed.
 18. **Would 20/20 correct establish a hallucination-free model?** No. It would describe only the observed questions under the stated rubric and run conditions, not a guarantee for other questions.

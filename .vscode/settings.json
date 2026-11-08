@@ -1,3 +1,42 @@
 {
-  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe"
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "latex-workshop.latex.autoBuild.run": "onSave",
+  "latex-workshop.latex.outDir": "%DIR%",
+  "latex-workshop.latex.recipe.default": "first",
+  "latex-workshop.view.pdf.viewer": "tab",
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "Seminar: XeLaTeX twice + PDF",
+      "tools": [
+        "seminar-xelatex",
+        "seminar-xelatex",
+        "seminar-pdf"
+      ]
+    }
+  ],
+  "latex-workshop.latex.tools": [
+    {
+      "name": "seminar-xelatex",
+      "command": "xelatex",
+      "cwd": "%DIR%",
+      "args": [
+        "-no-pdf",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-halt-on-error",
+        "-output-directory=%OUTDIR%",
+        "%DOC_EXT%"
+      ]
+    },
+    {
+      "name": "seminar-pdf",
+      "command": "xdvipdfmx",
+      "cwd": "%DIR%",
+      "args": [
+        "-o",
+        "%OUTDIR%/%DOCFILE%.pdf",
+        "%OUTDIR%/%DOCFILE%.xdv"
+      ]
+    }
+  ]
 }

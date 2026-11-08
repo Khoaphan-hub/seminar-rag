@@ -60,7 +60,7 @@ def main():
             'fully_correct':int(score==1),'abstained_on_requested_answer':int(pure_abstain),
             'grounding_review':grounding,'citation_ids':';'.join(citations),'invalid_citation_ids':';'.join(invalid),
             'missing_citation_on_substantive_answer':int(cond!='closed_book' and not pure_abstain and not citations),
-            'reviewer':'Codex-assisted source review; pending independent team verification',
+            'reviewer':'Codex-assisted source review; read and accepted by Phan Anh Khoa (24125059)',
             'answer_sha256':hashlib.sha256(r['answer'].encode()).hexdigest(),'rationale_en':note})
     rows.sort(key=lambda r:(r['question_id'],r['condition']))
     with (ROOT/'results/answer_review.csv').open('w',newline='',encoding='utf-8-sig') as f:
@@ -69,12 +69,14 @@ def main():
     for c in ['closed_book','tfidf','embedding']:
         part=[r for r in rows if r['condition']==c]
         summaries.append({'condition':c,'n':20,'fully_correct':sum(r['fully_correct'] for r in part),
-            'partial':sum(r['score']==.5 for r in part),'mean_score':sum(r['score'] for r in part)/20,
+            'partial':sum(r['score']==.5 for r in part),
+            'incorrect':sum(r['score']==0 and not r['abstained_on_requested_answer'] for r in part),'mean_score':sum(r['score'] for r in part)/20,
             'abstentions':sum(r['abstained_on_requested_answer'] for r in part),
             'invalid_citation_answers':sum(bool(r['invalid_citation_ids']) for r in part),
             'missing_citation_answers':sum(r['missing_citation_on_substantive_answer'] for r in part)})
     (ROOT/'results/answer_summary.json').write_text(json.dumps({'source_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),
-        'assessment':'Assisted review, descriptive, not blind or independent human assessment.',
+        'assessment':'Codex-assisted review, read and accepted by Phan Anh Khoa (24125059); not blind or independent multi-rater assessment.',
+        'review_acceptance':{'reviewer':'Phan Anh Khoa','student_id':'24125059','status':'read_and_accepted','score_changes_requested':False,'basis':'Explicit confirmation in project conversation','separate_review_by_second_member_confirmed':False},
         'citation_warning':'ID existence and missing citations are structural checks, not automatic proof of semantic support.',
         'summaries':summaries},ensure_ascii=False,indent=2),encoding='utf-8')
     print(json.dumps(summaries,indent=2))

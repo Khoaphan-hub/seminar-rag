@@ -38,3 +38,7 @@ The English rationale field is `rationale_en`. The translation preserves scores,
 - **Beyond evidence:** the answer adds information absent from its context, even if found elsewhere in the full PDF.
 
 A response can have multiple failure types. Constructed examples must be labeled hypothetical and excluded from counts of observed model failures.
+
+## Review acceptance
+
+Phan Anh Khoa (24125059) confirmed that he read and agreed with the assisted evaluation. Scores and rationales remain unchanged. This acceptance does not establish blind re-scoring, inter-rater agreement, or a separate review by Bùi Trọng Thành. See `REVIEW_SIGNOFF.md`.

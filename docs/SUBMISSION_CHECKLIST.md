@@ -16,17 +16,17 @@ Team: **Phan Anh Khoa — 24125059** and **Bùi Trọng Thành — 24125043**.
 | At least three analyzed failures | Q06, Q13, Q09, plus Q14/Q15 generation analysis |
 | Verification and source updates | Report: Verification, Updates, and Limitations |
 | Required paper and Sequence/Token comparison | Report: Background and Method |
-| A4 report, 6–10 content pages | English LaTeX/PDF edition requested by the team |
+| A4 report, 6–10 content pages | English LaTeX/PDF edition requested by the team; the instructor permits 1–2 additional content pages, as reported by the team |
 | Team names and student IDs | Report title block and README |
-| Presentation: 8–12 slides, 15 minutes | Existing 12-slide Canva deck; slide revision deferred |
+| Presentation: 8–12 slides, 15 minutes | Pending: local slide files removed; content planning deferred |
 | Five-minute Q&A, participation by every member | Two-person plan in `docs/PRESENTATION_AND_QA.md` |
 | Attribution for data, tables, diagrams, equations, and AI | Bibliography, captions, notices, AI disclosure |
 
 ## Before Submission
 
-- Independently review `answer_review.csv`, particularly partial-credit labels and `inference_from_URL`.
+- Evaluation acceptance recorded: Phan Anh Khoa read and agreed with the assisted results; see `REVIEW_SIGNOFF.md`. A separate review by Bùi Trọng Thành has not been confirmed.
 - Rehearse the 15-minute talk and ensure both members answer at least one question during Q&A.
 - Review the instructor's language and submission instructions against the team's requested English edition.
 - Confirm the deadline, submission channel, and filename requirements in the instructor's separate announcement; the assignment PDF gives no specific date.
 - Invite the intended collaborator separately to GitHub and Canva. Do not share API keys.
-- The current update deliberately leaves Canva and `slides/` unchanged. Existing slide notes may still describe three speakers; use the two-person plan in `docs/PRESENTATION_AND_QA.md` until a later slide revision.
+- Prepare a new slide deck after agreeing on its content. The local `slides/` folder is empty; the external Canva design was not deleted.
