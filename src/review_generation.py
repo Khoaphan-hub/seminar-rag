@@ -74,7 +74,7 @@ def main():
             'abstentions':sum(r['abstained_on_requested_answer'] for r in part),
             'invalid_citation_answers':sum(bool(r['invalid_citation_ids']) for r in part),
             'missing_citation_answers':sum(r['missing_citation_on_substantive_answer'] for r in part)})
-    (ROOT/'results/answer_summary.json').write_text(json.dumps({'source_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),
+    (ROOT/'results/answer_summary.json').write_text(json.dumps({'generation_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),
         'assessment':'Codex-assisted review, reviewed and accepted by Phan Anh Khoa (24125059) and Bùi Trọng Thành (24125043); not blind or independent multi-rater assessment.',
         'review_acceptance':[
             {'reviewer':'Phan Anh Khoa','student_id':'24125059','status':'read_and_accepted','score_changes_requested':False,'basis':'Explicit confirmation in project conversation'},

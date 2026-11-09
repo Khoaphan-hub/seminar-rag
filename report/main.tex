@@ -129,7 +129,7 @@ Cosine lies in $[-1,1]$ generally and in $[0,1]$ for nonnegative TF-IDF vectors.
 \subsection*{Corpus and Evaluation Design}
 The corpus contains all seven pages of Zhu et al.~\cite{abess}: pages 1--4 contain the main text, and pages 5--7 contain acknowledgments and references. Page 1 states CC BY 4.0. A manifest records the source URL, authors, license, and SHA-256 hash. Extraction applies Unicode NFKC normalization, line-end dehyphenation, and whitespace collapse. Tables are not rewritten into answer-bearing prose.
 
-Twenty questions and reference answers were saved before ranking, with evidence spans on specified pages. Q09 distinguishes article and software licenses, Q18 checks the scope of polynomial-time guarantees, and Q19 challenges a universal interpretation of a speedup claim. Questions and references are neither indexed nor used for training. AI-assisted gold annotations have been checked against the source text.
+Twenty questions and reference answers were saved before ranking, with evidence spans on specified pages. Q09 distinguishes article and software licenses, Q18 checks the scope of polynomial-time guarantees, and Q19 challenges a universal interpretation of a speedup claim. Questions and references are neither indexed nor used for training. AI-assisted gold annotations have been checked against the source text. Gold spans are short verbatim strings that locate each fact, not complete evidence passages; some, such as those for Q06, are sentence fragments. A chunk counts as relevant only if it contains the complete string.
 
 Page-wise chunking uses MiniLM's WordPiece tokenizer: 96 or 192 tokens with 24-token overlap, producing 81 or 36 chunks. Including special tokens, every chunk fits the model's 256-token limit. No long chunk is silently truncated. Each method uses the same chunks and $k=1,3,5$, with stable tie ordering. MiniLM tokens differ from words, characters, and Gemini billing tokens.
 
@@ -248,7 +248,7 @@ Repository: \url{https://github.com/Khoaphan-hub/seminar-rag}.
 \item \texttt{docs/EVALUATION.md}: rubric and annotation limitations.
 \item \texttt{docs/PRESENTATION\_AND\_QA.md}: team roles and discussion questions.
 \end{itemize}
-The source PDF and license information accompany the code. API keys, Python environments, model weights, and the old vector store are excluded from Git. Instructor-supplied foundational papers remain local and are not included under a blanket repository license.
+The source PDF and license information accompany the code. API keys, Python environments, and model weights are excluded from Git. Instructor-supplied foundational papers remain local and are not included under a blanket repository license.
 \endgroup
 \clearpage
 \section*{Appendix B: Extension to an Organizational Document Chatbot}
