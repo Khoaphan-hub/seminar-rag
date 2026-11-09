@@ -1,14 +1,22 @@
 {
   "source_sha256": "f23ead1f5204473b562a4df2eea127f65ffd240d0cb8b5e2af0a8caf55d2cb3b",
-  "assessment": "Codex-assisted review, read and accepted by Phan Anh Khoa (24125059); not blind or independent multi-rater assessment.",
-  "review_acceptance": {
-    "reviewer": "Phan Anh Khoa",
-    "student_id": "24125059",
-    "status": "read_and_accepted",
-    "score_changes_requested": false,
-    "basis": "Explicit confirmation in project conversation",
-    "separate_review_by_second_member_confirmed": false
-  },
+  "assessment": "Codex-assisted review, reviewed and accepted by Phan Anh Khoa (24125059) and Bùi Trọng Thành (24125043); not blind or independent multi-rater assessment.",
+  "review_acceptance": [
+    {
+      "reviewer": "Phan Anh Khoa",
+      "student_id": "24125059",
+      "status": "read_and_accepted",
+      "score_changes_requested": false,
+      "basis": "Explicit confirmation in project conversation"
+    },
+    {
+      "reviewer": "Bùi Trọng Thành",
+      "student_id": "24125043",
+      "status": "reviewed_and_accepted",
+      "score_changes_requested": false,
+      "basis": "Explicit confirmation in project conversation"
+    }
+  ],
   "citation_warning": "ID existence and missing citations are structural checks, not automatic proof of semantic support.",
   "summaries": [
     {
@@ -16,33 +24,33 @@
       "n": 20,
       "fully_correct": 5,
       "partial": 6,
+      "incorrect": 9,
       "mean_score": 0.4,
       "abstentions": 0,
       "invalid_citation_answers": 0,
-      "missing_citation_answers": 0,
-      "incorrect": 9
+      "missing_citation_answers": 0
     },
     {
       "condition": "tfidf",
       "n": 20,
       "fully_correct": 16,
       "partial": 2,
+      "incorrect": 0,
       "mean_score": 0.85,
       "abstentions": 2,
       "invalid_citation_answers": 0,
-      "missing_citation_answers": 0,
-      "incorrect": 0
+      "missing_citation_answers": 0
     },
     {
       "condition": "embedding",
       "n": 20,
       "fully_correct": 14,
       "partial": 3,
+      "incorrect": 0,
       "mean_score": 0.775,
       "abstentions": 3,
       "invalid_citation_answers": 0,
-      "missing_citation_answers": 1,
-      "incorrect": 0
+      "missing_citation_answers": 1
     }
   ]
 }

@@ -41,4 +41,4 @@ A response can have multiple failure types. Constructed examples must be labeled
 
 ## Review acceptance
 
-Phan Anh Khoa (24125059) confirmed that he read and agreed with the assisted evaluation. Scores and rationales remain unchanged. This acceptance does not establish blind re-scoring, inter-rater agreement, or a separate review by Bùi Trọng Thành. See `REVIEW_SIGNOFF.md`.
+Phan Anh Khoa (24125059) and Bùi Trọng Thành (24125043) each confirmed that they reviewed and agreed with the assisted evaluation. Scores and rationales remain unchanged. This acceptance does not establish blind re-scoring or inter-rater agreement. See `REVIEW_SIGNOFF.md`.

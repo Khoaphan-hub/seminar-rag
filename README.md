@@ -88,7 +88,7 @@ The final experiment uses `gemini-3.5-flash-lite`. Earlier 3.8 requests timed ou
 
 **Recall@k means recall among the first k ranked results.** See [the definition and worked example](docs/RECALL_AT_K.md). The assignment's notation is valid; the experiment retains it and makes the cutoff explicit.
 
-There are 240 retrieval records (20 questions × 2 methods × 2 sizes × 3 k values) and 60 final Gemini responses. Assisted review found 5/20 fully correct closed-book answers, 16/20 with TF-IDF, and 14/20 with MiniLM. Phan Anh Khoa (24125059) has read and accepted the assisted evaluation without score changes. This is not blind or independent multi-rater validation; see `docs/REVIEW_SIGNOFF.md`. The English rationale column is `rationale_en`; scores and original responses are preserved.
+There are 240 retrieval records (20 questions × 2 methods × 2 sizes × 3 k values) and 60 final Gemini responses. Assisted review found 5/20 fully correct closed-book answers, 16/20 with TF-IDF, and 14/20 with MiniLM. Phan Anh Khoa (24125059) and Bùi Trọng Thành (24125043) have reviewed and accepted the assisted evaluation without score changes. This is not blind or independent multi-rater validation; see `docs/REVIEW_SIGNOFF.md`. The English rationale column is `rationale_en`; scores and original responses are preserved.
 
 `generation_pilot.jsonl` is excluded from the final results because its baseline prompt lacked matching paper-identifying metadata.
 

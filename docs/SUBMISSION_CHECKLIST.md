@@ -14,7 +14,7 @@ Team: **Phan Anh Khoa — 24125059** and **Bùi Trọng Thành — 24125043**.
 | Symbols, ranges, assumptions, numerical example | Report: Method and Worked Example |
 | Question, chunks, answer, and citation example | Q08 in the report |
 | At least three analyzed failures | Q06, Q13, Q09, plus Q14/Q15 generation analysis |
-| Verification and source updates | Report: Verification, Updates, and Limitations |
+| Verification and source updates | Report: Results and Discussion (verification, updates, limitations) |
 | Required paper and Sequence/Token comparison | Report: Background and Method |
 | A4 report, 6–10 content pages | English LaTeX/PDF edition requested by the team; the instructor permits 1–2 additional content pages, as reported by the team |
 | Team names and student IDs | Report title block and README |
@@ -24,7 +24,7 @@ Team: **Phan Anh Khoa — 24125059** and **Bùi Trọng Thành — 24125043**.
 
 ## Before Submission
 
-- Evaluation acceptance recorded: Phan Anh Khoa read and agreed with the assisted results; see `REVIEW_SIGNOFF.md`. A separate review by Bùi Trọng Thành has not been confirmed.
+- Evaluation acceptance recorded: Phan Anh Khoa and Bùi Trọng Thành reviewed and agreed with the assisted results; see `REVIEW_SIGNOFF.md`.
 - Rehearse the 15-minute talk and ensure both members answer at least one question during Q&A.
 - Review the instructor's language and submission instructions against the team's requested English edition.
 - Confirm the deadline, submission channel, and filename requirements in the instructor's separate announcement; the assignment PDF gives no specific date.
