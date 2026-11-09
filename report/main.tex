@@ -59,6 +59,7 @@ Schneider~\cite{schneider} & Verifiability of generated outputs; lineage of AI m
 \caption{Synthesis of the readings and their roles in the project.}
 \end{table}
 
+The PDF is extracted once and split into identical chunks for both methods. At query time, each method converts the question into its own vector space, scores all chunks by cosine similarity, and selects top-$k$. We evaluate those selected chunks against reference evidence. For answer generation, the saved chunks from one method are inserted into a source-labeled prompt; the resulting claims and citations are checked against the cited text. This is prompt-based RAG, not the probability marginalization of RAG-Sequence or RAG-Token.
 
 \begin{figure}[!htb]
 \centering
@@ -101,7 +102,6 @@ Schneider~\cite{schneider} & Verifiability of generated outputs; lineage of AI m
 \end{tikzpicture}
 \caption{Project pipeline informed by Lewis et al.~\cite{lewis}. Each RAG answer uses one retriever's top-$k$ chunks. Closed-book uses no retrieved context. Final review is offline, not an automated semantic verifier; automated citation checks validate IDs.}
 \end{figure}
-The PDF is extracted once and split into identical chunks for both methods. At query time, each method converts the question into its own vector space, scores all chunks by cosine similarity, and selects top-$k$. We evaluate those selected chunks against reference evidence. For answer generation, the saved chunks from one method are inserted into a source-labeled prompt; the resulting claims and citations are checked against the cited text. This is prompt-based RAG, not the probability marginalization of RAG-Sequence or RAG-Token.
 
 \section{Method and Worked Example}
 \subsection*{RAG-Sequence and RAG-Token}
