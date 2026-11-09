@@ -1,0 +1,262 @@
+[
+  {
+    "id": "Q01",
+    "question": "In the 2022 article, what is the objective of choosing the best subset of explanatory variables?",
+    "answer": "A minimally adequate subset of variables that accurately fits the data.",
+    "evidence": [
+      {
+        "page": 1,
+        "quote": "a minimally adequate subset of variables"
+      }
+    ],
+    "original_question": "According to the 2022 abess paper, what is best-subset selection trying to find?"
+  },
+  {
+    "id": "Q02",
+    "question": "What programming language is used for the underlying engine of abess?",
+    "answer": "C++.",
+    "evidence": [
+      {
+        "page": 1,
+        "quote": "The core of the library is programmed in C++."
+      }
+    ],
+    "original_question": "Which language implements the core of abess in the 2022 paper?"
+  },
+  {
+    "id": "Q03",
+    "question": "From which distribution repositories can people obtain abess for Python and for R?",
+    "answer": "Python users can install from PyPI and R users from CRAN.",
+    "evidence": [
+      {
+        "page": 1,
+        "quote": "Python Package Index (PyPI)"
+      },
+      {
+        "page": 1,
+        "quote": "Comprehensive R Archive Network (CRAN)"
+      }
+    ],
+    "original_question": "Where can Python and R users install abess according to the paper?"
+  },
+  {
+    "id": "Q04",
+    "question": "What underlying technique provides the foundation for the integrated abess tools?",
+    "answer": "The splicing technique proposed by Zhu et al. (2020).",
+    "evidence": [
+      {
+        "page": 2,
+        "quote": "splicing technique proposed by Zhu et al. (2020)"
+      }
+    ],
+    "original_question": "Which method is the unified abess toolkit based on?"
+  },
+  {
+    "id": "Q05",
+    "question": "Which three engineering features make computations in abess more efficient?",
+    "answer": "Warm-start initialization, sparse matrix support, and OpenMP parallelism.",
+    "evidence": [
+      {
+        "page": 2,
+        "quote": "warm-start initialization, sparse matrix support, and OpenMP parallelism"
+      }
+    ],
+    "original_question": "What three implementation choices improve the computational efficiency of abess?"
+  },
+  {
+    "id": "Q06",
+    "question": "According to the 2022 publication, what are the oldest supported releases of Python and R?",
+    "answer": "Python 3.6 and R 3.1.0.",
+    "evidence": [
+      {
+        "page": 2,
+        "quote": "3.6) or R (version"
+      },
+      {
+        "page": 2,
+        "quote": "3.1.0)"
+      }
+    ],
+    "original_question": "What minimum Python and R versions does the 2022 abess paper state?"
+  },
+  {
+    "id": "Q07",
+    "question": "Which platform runs automated checks when the abess implementation is changed?",
+    "answer": "GitHub Actions for continuous integration.",
+    "evidence": [
+      {
+        "page": 2,
+        "quote": "It relies on Github Actions"
+      }
+    ],
+    "original_question": "What service does abess use to automatically check changes to its code?"
+  },
+  {
+    "id": "Q08",
+    "question": "When the article was written, what percentages of the Python and R implementations were covered by tests?",
+    "answer": "97% for Python and 96% for R.",
+    "evidence": [
+      {
+        "page": 2,
+        "quote": "97% and 96%, respectively"
+      }
+    ],
+    "original_question": "At the time of writing, what were the Python and R package test coverages?"
+  },
+  {
+    "id": "Q09",
+    "question": "Under which licensing terms are the abess implementation and the publication each made available?",
+    "answer": "The source code is GPL-3; the article is CC BY 4.0.",
+    "evidence": [
+      {
+        "page": 2,
+        "quote": "The source code is distributed under the GPL-3 license."
+      },
+      {
+        "page": 1,
+        "quote": "License: CC-BY 4.0"
+      }
+    ],
+    "original_question": "What license covers the abess source code, and what license covers this research article?"
+  },
+  {
+    "id": "Q10",
+    "question": "Which elective transformations of explanatory variables are handled by the Data component?",
+    "answer": "Screening or normalization.",
+    "evidence": [
+      {
+        "page": 2,
+        "quote": "screened (Fan and Lv, 2008) or normalized"
+      }
+    ],
+    "original_question": "What optional preprocessing does the Data class perform on predictors?"
+  },
+  {
+    "id": "Q11",
+    "question": "What software class evaluates fitted solutions through held-out folds or information-based selection rules?",
+    "answer": "The Metric class.",
+    "evidence": [
+      {
+        "page": 2,
+        "quote": "The Metric class assesses the estimation"
+      }
+    ],
+    "original_question": "Which class assesses estimated models using cross-validation or information criteria?"
+  },
+  {
+    "id": "Q12",
+    "question": "Which pair of information-based model evaluation criteria is named in the description of the software architecture?",
+    "answer": "Akaike information criterion and high dimensional Bayesian information criterion.",
+    "evidence": [
+      {
+        "page": 2,
+        "quote": "Akaike information criterion and the high dimensional Bayesian information criterion"
+      }
+    ],
+    "original_question": "Name the two information criteria mentioned for model assessment in the Architecture section."
+  },
+  {
+    "id": "Q13",
+    "question": "What must a programmer implement to support an additional learning problem in abess?",
+    "answer": "Write a subclass of Algorithm, implementing the relevant virtual interfaces.",
+    "evidence": [
+      {
+        "page": 2,
+        "quote": "extend the library to various machine learning tasks by writing a subclass of Algorithm"
+      }
+    ],
+    "original_question": "How can a developer extend abess to a new machine learning task?"
+  },
+  {
+    "id": "Q14",
+    "question": "What trio of standard R operations lets users inspect or graph the fitted output?",
+    "answer": "print, coef, and plot.",
+    "evidence": [
+      {
+        "page": 3,
+        "quote": "print, coef, and plot"
+      }
+    ],
+    "original_question": "Which three generic R functions are mentioned for accessing results or visualizing them?"
+  },
+  {
+    "id": "Q15",
+    "question": "In the Python demonstration, approximately what value is obtained for the area under the ROC curve?",
+    "answer": "Approximately 0.966.",
+    "evidence": [
+      {
+        "page": 3,
+        "quote": "area under the curve (AUC), which is 0.966"
+      }
+    ],
+    "original_question": "What approximate AUC does the Python usage example report?"
+  },
+  {
+    "id": "Q16",
+    "question": "For the results in Table 2, over how many randomly sampled evaluation sets are the measurements averaged?",
+    "answer": "20 randomly drawn test sets.",
+    "evidence": [
+      {
+        "page": 4,
+        "quote": "20 randomly drawn test sets"
+      }
+    ],
+    "original_question": "In Table 2, how many randomly drawn test sets were used to average performance?"
+  },
+  {
+    "id": "Q17",
+    "question": "In the benchmark results, what quantity is represented by the abbreviation NNZ?",
+    "answer": "The number of non-zero elements.",
+    "evidence": [
+      {
+        "page": 4,
+        "quote": "NNZ: the number of non-zero elements"
+      }
+    ],
+    "original_question": "What does NNZ mean in the performance comparison?"
+  },
+  {
+    "id": "Q18",
+    "question": "Is the polynomial running-time guarantee in the article applicable to all instances of best-subset selection?",
+    "answer": "No. The stated high-probability polynomial-time guarantee is under the classical linear model, while best-subset selection is NP-hard in general.",
+    "evidence": [
+      {
+        "page": 2,
+        "quote": "under the classical linear model in polynomial time with high probability"
+      },
+      {
+        "page": 1,
+        "quote": "NP-hard problem"
+      }
+    ],
+    "original_question": "Does the paper establish a polynomial-time solution for every best-subset selection problem?"
+  },
+  {
+    "id": "Q19",
+    "question": "Is the reported speed advantage of over a factor of twenty over scikit-learn valid for every evaluated dataset?",
+    "answer": "No. The explicit more-than-20x claim concerns the cancer dataset and the scikit-learn l1 baseline, not every dataset.",
+    "evidence": [
+      {
+        "page": 4,
+        "quote": "for the cancer data set, it is more than 20x faster than scikit-learn"
+      }
+    ],
+    "original_question": "Does abess run more than twenty times faster than scikit-learn on every dataset in the paper?"
+  },
+  {
+    "id": "Q20",
+    "question": "For the sparse principal component analysis data in Table 3, what are the sample count and the count of genetic variables?",
+    "answer": "217 observations and 1,413 genetic factors.",
+    "evidence": [
+      {
+        "page": 4,
+        "quote": "217 observations"
+      },
+      {
+        "page": 4,
+        "quote": "1,413 genetic factors"
+      }
+    ],
+    "original_question": "How many observations and genetic factors are in the sparse PCA dataset in Table 3?"
+  }
+]

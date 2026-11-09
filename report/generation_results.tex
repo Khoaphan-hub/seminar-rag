@@ -7,10 +7,12 @@ Closed-book & 5/20 & 6/20 & 9/20 & 0/20 & 0.400\\
 TF-IDF RAG & 16/20 & 2/20 & 0/20 & 2/20 & 0.850\\
 MiniLM RAG & 14/20 & 3/20 & 0/20 & 3/20 & 0.775\\\bottomrule
 \end{tabular}
-\caption{AI-assisted review of actual responses, not an independent blind human evaluation. Scores: complete 1, partial 0.5, wrong/abstained 0. The four outcome categories are mutually exclusive and sum to 20 per condition. Incorrect means a zero-score answer that did not abstain; both incorrect answers and abstentions receive 0.}
+\caption{Evaluation of the 60 recorded responses. Scores: complete 1, partial 0.5, wrong/abstained 0. The four outcome categories are mutually exclusive and sum to 20 per condition. Incorrect means a zero-score answer that did not abstain; both incorrect answers and abstentions receive 0.}
 \end{table}
 
-The rubric checks the target entities, numbers, and qualifications in the reference. Each label has a rationale and response hash in \texttt{answer\_review.csv}. Partial credit involves judgment: Q19 identifies the cancer-specific scope but still states that information is insufficient instead of explicitly rejecting a universal claim. Phan Anh Khoa (24125059) confirmed that he read and accepted the assisted evaluation without requesting score changes. This acceptance is not a blind re-scoring exercise.
+Zero responses in the Incorrect category does not imply zero unsupported claims: partial answers and abstentions may still contain inaccurate or unsupported explanations. These are response-level categories, not a claim-level hallucination rate.
+
+The rubric checks the target entities, numbers, and qualifications in the reference. Each label has a rationale and response hash in \texttt{answer\_review.csv}. Partial credit involves judgment: Q19 identifies the cancer-specific scope but still states that information is insufficient instead of explicitly rejecting a universal claim.
 
 \textbf{Context correcting an error.} For Q16, closed-book returns 100 test sets, whereas the PDF states 20. Both RAG responses return 20 and cite \texttt{s192-p4-t504}. For Q06, closed-book incorrectly gives R 3.5.0; MiniLM correctly gives R $\ge3.1.0$; TF-IDF abstains because the necessary passage is absent. Abstention receives no correctness credit even when it is appropriate for the supplied evidence.
 
