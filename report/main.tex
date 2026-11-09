@@ -46,15 +46,15 @@ RAG & External store & Retrieve top-k, then generate & Update store and index\\\
 \end{table}
 Lewis et al. combine DPR with BART, train the query encoder and generator, and keep the document encoder and index fixed. Their December 2018 Wikipedia snapshot contains about 21 million passages of 100 words each. Documents are latent variables, and output probabilities are marginalized over retrieved documents. Our TF-IDF/MiniLM/Gemini pipeline is a different implementation.
 
-The paper introduces a combination of parametric and non-parametric memory for knowledge-intensive tasks, with RAG-Sequence and RAG-Token formulations. Its Table 1 reports Natural Questions Exact Match of 44.5 for RAG-Sequence versus 41.5 for DPR. Its Table 6 shows BM25 outperforming the listed dense alternatives on FEVER in that ablation. Dense retrieval should therefore not be assumed to win universally. These are the authors' published results, not measurements from this project.
+The paper introduces a combination of parametric and non-parametric memory for knowledge-intensive tasks, with RAG-Sequence and RAG-Token formulations. Its Table 1 reports Natural Questions Exact Match of 44.5 for RAG-Sequence versus 41.5 for DPR. Its Table 6, a dev-set ablation, shows BM25 slightly ahead of the learned dense retriever on FEVER (3-way accuracy 75.1 versus 74.5), while the authors report that differentiable retrieval performs better on the other tasks. Dense retrieval should therefore not be assumed to win universally, although this single exception is small. These are the authors' published results, not measurements from this project.
 
-Schneider~\cite{schneider} reviews explainability for generative AI, including \textit{verifiability} and \textit{lineage}. Source provenance enables checking, but a model's explanation can itself be inaccurate. RAG narrows the sources to inspect without proving that they support every generated claim. Lewis provides a model and empirical evidence; Schneider motivates scrutiny of explanations and their origins.
+Schneider~\cite{schneider} reviews explainability for generative AI, including \textit{verifiability}, meaning that explanations should support verification of outputs, and \textit{lineage}, meaning the tracking of data, algorithms, and processes across a model's lifecycle. We apply lineage only by analogy, recording the origin of each retrieved passage. Schneider notes that RAG facilitates verifying an LLM's response, and that model self-explanations are not necessarily faithful. RAG narrows the sources to inspect without proving that they support every generated claim. Lewis provides a model and empirical evidence; Schneider motivates scrutiny of explanations and their origins.
 
 \begin{table}[H]\centering\small
 \begin{tabularx}{\linewidth}{p{2.5cm}XX}\toprule
 Paper & Relevant contribution & Application in this project\\\midrule
 Lewis et al.~\cite{lewis} & Retrieval and generation with Sequence/Token marginalization & Theoretical foundation; our API pipeline concatenates context and does not implement these marginalizations.\\
-Schneider~\cite{schneider} & Verifiability and lineage of generated explanations & Inspect source provenance and whether each cited passage supports the associated claim.\\\bottomrule
+Schneider~\cite{schneider} & Verifiability of generated outputs; lineage of AI models and data & Inspect source provenance and whether each cited passage supports the associated claim.\\\bottomrule
 \end{tabularx}
 \caption{Synthesis of the readings and their roles in the project.}
 \end{table}
@@ -99,11 +99,10 @@ Schneider~\cite{schneider} & Verifiability and lineage of generated explanations
 \draw[flow] (prompt) -- (gemini);
 \draw[flow] (gemini) -- (check);
 \end{tikzpicture}
-\caption{Project pipeline informed by Lewis et al.~\cite{lewis}. Each RAG answer uses one retriever; closed-book uses no retrieved context. Final review is offline, not an automated semantic verifier. Automated citation checks validate IDs.}
+\caption{Project pipeline informed by Lewis et al.~\cite{lewis}. Each RAG answer uses one retriever's top-$k$ chunks. Closed-book uses no retrieved context. Final review is offline, not an automated semantic verifier; automated citation checks validate IDs.}
 \end{figure}
 The PDF is extracted once and split into identical chunks for both methods. At query time, each method converts the question into its own vector space, scores all chunks by cosine similarity, and selects top-$k$. We evaluate those selected chunks against reference evidence. For answer generation, the saved chunks from one method are inserted into a source-labeled prompt; the resulting claims and citations are checked against the cited text. This is prompt-based RAG, not the probability marginalization of RAG-Sequence or RAG-Token.
 
-\newpage
 \section{Method and Worked Example}
 \subsection*{RAG-Sequence and RAG-Token}
 Let $x$ be the input question, $y=(y_1,\ldots,y_N)$ the output token sequence, and $Z_k(x)$ the retrieved top-k set. RAG-Sequence is~\cite{lewis}:
@@ -119,6 +118,8 @@ This does not require a new database search for every token. Concatenating passa
 
 \textbf{Hypothetical numerical example.} Assume two documents form the entire support, with normalized weights $p_\eta(z_1\mid x)=0.6$ and $p_\eta(z_2\mid x)=0.4$. Suppose the probabilities of the \emph{complete sequence} $y$ conditioned on those documents are 0.7 and 0.2. First compute $0.6\times0.7=0.42$, then $0.4\times0.2=0.08$. Their sum is $p(y\mid x)=0.50$. These numbers illustrate the equation; they were not obtained from Gemini. A sequence probability is not the probability that its factual content is true.
 
+\textbf{Hypothetical RAG-Token comparison.} Use the same weights and a two-token output, with $p_\theta(y_1\mid x,z)=0.875, 0.5$ and $p_\theta(y_2\mid x,z,y_1)=0.8, 0.4$ for $z_1,z_2$; these factors reproduce the sequence probabilities 0.7 and 0.2 above. RAG-Token mixes documents at each position: $0.6\times0.875+0.4\times0.5=0.725$ for $y_1$ and $0.6\times0.8+0.4\times0.4=0.64$ for $y_2$, so $p(y\mid x)=0.725\times0.64=0.464$. RAG-Sequence gives 0.50 because each term keeps one document for the whole output. These values are also illustrative.
+
 \subsection*{Representations and Ranking}
 TF-IDF uses lowercase text, English stopwords, unigrams/bigrams, and scikit-learn's smoothed IDF~\cite{sklearn}. For $M$ chunks, document frequency $df(t)$, and raw term count $tf(t,d)$:
 \[idf(t)=\log\frac{1+M}{1+df(t)}+1,\qquad w_{t,d}=tf(t,d)idf(t).\]
@@ -126,11 +127,10 @@ IDF is dimensionless and at least 1. Questions use the vocabulary and IDF fitted
 \[\operatorname{cos}(q,d)=\frac{q^\top d}{\|q\|_2\|d\|_2}.\]
 Cosine lies in $[-1,1]$ generally and in $[0,1]$ for nonnegative TF-IDF vectors. A zero TF-IDF query receives similarity 0. For $q=(1,1)$ and $d=(1,0)$, cosine is $1/\sqrt2\approx0.707$. Higher similarity does not imply a calibrated probability of correctness. The small corpus permits exhaustive search without an approximate vector index.
 
-\newpage
 \subsection*{Corpus and Evaluation Design}
 The corpus contains all seven pages of Zhu et al.~\cite{abess}: pages 1--4 contain the main text, and pages 5--7 contain acknowledgments and references. Page 1 states CC BY 4.0. A manifest records the source URL, authors, license, and SHA-256 hash. Extraction applies Unicode NFKC normalization, line-end dehyphenation, and whitespace collapse. Tables are not rewritten into answer-bearing prose.
 
-Twenty questions and reference answers were saved before ranking, with evidence spans on specified pages. Q09 distinguishes article and software licenses, Q18 checks the scope of polynomial-time guarantees, and Q19 challenges a universal interpretation of a speedup claim. Questions and references are neither indexed nor used for training. Gold annotations have been checked against the source text.
+Twenty questions and reference answers were saved before ranking, with evidence spans on specified pages. Q09 distinguishes article and software licenses, Q18 checks the scope of polynomial-time guarantees, and Q19 challenges a universal interpretation of a speedup claim. Questions and references are neither indexed nor used for training. Gold annotations have been checked against the source text. Gold spans are short verbatim strings that locate each fact, not complete evidence passages; some, such as those for Q06, are sentence fragments. A chunk counts as relevant only if it contains the complete string.
 
 Page-wise chunking uses MiniLM's WordPiece tokenizer: 96 or 192 tokens with 24-token overlap, producing 81 or 36 chunks. Including special tokens, every chunk fits the model's 256-token limit. No long chunk is silently truncated. Each method uses the same chunks and $k=1,3,5$, with stable tie ordering. MiniLM tokens differ from words, characters, and Gemini billing tokens.
 
@@ -139,7 +139,7 @@ Page-wise chunking uses MiniLM's WordPiece tokenizer: 96 or 192 tokens with 24-t
 \operatorname{MacroRecall@k}=\frac1{20}\sum_q\operatorname{Recall@k}(q).\]
 Every $R_q$ is nonempty. Scores are dimensionless and lie in $[0,1]$. Overlap can create multiple relevant chunks containing the same fact. We therefore also report evidence recall (fraction of gold spans fully covered by the union of returned chunks), hit (at least one span covered), and all-evidence (every span covered). Retrieving one of two required spans gives evidence recall $1/2$, hit 1, and all-evidence 0.
 
-Gold spans are selected references rather than exhaustive relevance labels. Q03's PyPI/CRAN information also appears on page 2, outside its selected page-1 gold. Retrieval scores therefore cannot replace answer review. Generation compares closed-book, TF-IDF RAG, and MiniLM RAG using Gemini 3.5 Flash-Lite~\cite{gemini}, temperature 0, and at most 2048 output tokens. Calls are independent. Both RAG conditions use 192-token chunks and $k=3$, selected before inspecting results.
+Gold spans are selected references rather than exhaustive relevance labels. Q03's PyPI/CRAN information also appears on page 2, outside its selected page-1 gold. Retrieval scores therefore cannot replace answer review. Generation compares closed-book, TF-IDF RAG, and MiniLM RAG using Gemini 3.5 Flash-Lite~\cite{gemini}, temperature 0, and at most 2048 output tokens. Every prompt asks for an answer of at most 100 words, which can limit detail. Calls are independent. Both RAG conditions use 192-token chunks and $k=3$, selected before inspecting results.
 
 \subsection*{Question, Retrieved Context, and Answer}
 \begingroup\small
@@ -160,7 +160,6 @@ Source: abess~\cite{abess}, page 2; \texttt{s192-p2-t336}. This is an excerpt of
 \end{minipage}}
 \endgroup
 
-\newpage
 \section{Results and Discussion}
 \subsection*{Measured Retrieval Results}
 \input{retrieval_table.tex}
@@ -200,7 +199,6 @@ For example, Q06 changes ``minimum Python and R versions'' to ``oldest supported
 \subsection*{Answer Quality and Citation Review}
 \input{generation_results.tex}
 
-\newpage
 \subsection*{Failures Across the Pipeline}
 \begin{table}[H]\centering\small
 \begin{tabularx}{\linewidth}{p{2.7cm}XX}\toprule
@@ -214,6 +212,8 @@ Beyond evidence & Claim exceeds supplied context & Separate supported facts and 
 \end{table}
 One response may exhibit several failures. When retrieval is incomplete, the model may abstain, answer correctly from parametric memory, or fabricate details. Consequently, not every wrong answer is a retriever failure, and correctness alone does not establish grounding. A statement supported by the full PDF but absent from the actual prompt still exceeds the evidence supplied in that call.
 
+\textbf{Observed coverage of the failure categories.} Missing and incorrect retrieval have clear observed cases (Q06, Q13), and Q09 shows partial retrieval. Beyond-evidence generation has one clear case, MiniLM's Q07 inference from a URL. We did not record a clear irrelevant citation; the nearest case is MiniLM's Q15, which cites a chunk for a mistaken explanation of missing evidence. The review has no separate citation-support label, so this absence is not evidence that citations are reliable.
+
 \textbf{Constructed citation example.} Attaching \texttt{s192-p1-t336} to Q08's 97\%/96\% coverage claim is inappropriate because those values occur in \texttt{s192-p2-t336}. The existence of an ID does not establish support. This example illustrates a diagnostic and is not counted as an observed Gemini error.
 
 \textbf{Failures before generation.} PDF extraction can omit text, and an index may retain outdated content. Tables can lose row/column structure. Chunk boundaries may remove a condition at the end of a sentence or on the next page. IDF may reward matching terms without useful evidence; embeddings may prioritize broad topical similarity. A prompt may lose metadata, be truncated, or contain instructions embedded in a retrieved document. The demo delimits SOURCE blocks and treats them as evidence rather than instructions, but that instruction is not an absolute security guarantee.
@@ -222,8 +222,9 @@ Correctness is assessed against the reference answer, groundedness against the a
 
 These distinctions suggest separate improvements. Better extraction addresses damaged evidence; retrieval improvements address selection; prompting may improve abstention and citation behavior; claim checking addresses unsupported conclusions. Improving only one stage cannot ensure end-to-end reliability. All proposed remedies would need new controlled measurements before being described as effective.
 
-\newpage
-\section{Verification, Updates, and Limitations}
+\subsection*{Answering the Research Question}
+Incorrect answers fell from 9/20 closed-book to 0/40 across both RAG conditions, so retrieval clearly helped in this run. This does not show that hallucination was eliminated. All questions were answerable from one short paper, none was unanswerable, answers were capped at 100 words, and each condition ran once. Residual problems also remain: MiniLM's Q07 goes beyond explicit evidence, its Q15 gives a mistaken reason for abstaining, and five responses abstain on answerable questions. Our answer is therefore qualified: supplying documents reduced wrong answers here, but this demonstration cannot establish elimination, and support still has to be checked claim by claim.
+
 \subsection*{Proposed Verification Process}
 Split a response into checkable claims. For each, verify that its citation ID appears in the prompt, that the cited passage supports it, and that the source's conditions and scope are preserved. Multi-part questions need evidence for each part. If support is incomplete, provide the supported portion and identify what remains unknown. A model's self-explanation or self-grading is not independent confirmation.
 
@@ -233,12 +234,53 @@ Hybrid retrieval, reranking, or larger k may help when evidence is weak, but the
 Keep each source's URL, license, version, and hash. When a hash changes, repeat extraction, chunking, and indexing; remove stale chunks when a source is deleted. Run regression checks on answers and citations, retaining earlier snapshots for reproduction. Historical questions about the 2022 paper must remain linked to that snapshot rather than silently using current documentation. Metadata distinguishes the origin of evidence from explanations produced by the model.
 
 \subsection*{Limitations}
-The study uses one paper, 20 deliberately authored questions, one small embedding model, and one generated response per question per condition, with no repeated runs. Three of seven corpus pages mainly contain references, unlike a large store with competing sources. Gold spans do not cover all equivalent evidence, and page-wise splitting can interrupt context. Changing chunk size changes both the relevance units and the amount of retrieved text at a fixed $k$. Cross-size comparisons therefore do not isolate chunk size under an equal context budget.
+The study uses one paper, 20 deliberately authored questions, one small embedding model, and one generated response per question per condition, with no repeated runs. Three of seven corpus pages mainly contain references, unlike a large store with competing sources. Gold spans do not cover all equivalent evidence, and page-wise splitting can interrupt context.
 
-There is no independent tuning/test split or statistical significance test. The public paper may have appeared in Gemini's training data, so closed-book performance is not a measure of entirely unseen knowledge. Temperature 0 does not guarantee identical future API outputs. Provider-side changes, quota, and network failures affect reproducibility. Only recorded successful responses are evaluated; API errors are not scored as wrong answers or replaced with invented responses.
+Changing chunk size changes both relevance units and the amount of retrieved text at fixed $k$, so comparisons do not isolate chunk size under an equal context budget. There is no independent tuning/test split or statistical significance test. The public paper may have appeared in Gemini's training data, so closed-book performance is not a measure of entirely unseen knowledge. Temperature 0 does not guarantee identical future API outputs. Provider-side changes, quota, and network failures affect reproducibility. Only recorded successful responses are evaluated; API errors are not scored as wrong answers or replaced with invented responses.
+
+A possible extension to an organizational document chatbot is outlined in Appendix B; it is a design proposal that was not implemented or measured.
+
+\section{Conclusion}
+RAG improved answer correctness in this demonstration, but retrieval coverage and faithful generation remain separate requirements. With 192-token chunks and $k=3$, TF-IDF achieved 80\% evidence recall on the original questions versus 62.5\% for MiniLM. Under the same generation configuration, fully correct answers increased from 5/20 without retrieval to 16/20 with TF-IDF and 14/20 with MiniLM. Missing evidence, omitted citations, and inaccurate explanations still require explicit review.
+
+The exploratory paraphrase experiment qualifies the original ranking. At the same retrieval setting, evidence recall fell to 55\% for both methods: a decline of 25 percentage points for TF-IDF and 7.5 for MiniLM. MiniLM was less affected by this set of rewordings, but did not outperform TF-IDF in evidence recall after paraphrasing. These results motivate testing realistic query variation rather than selecting a retriever from original-query scores alone. They do not establish universal dense-retrieval superiority, and no answer-quality improvement can be inferred because paraphrased queries were not sent to Gemini.
+
+One corpus, selected gold spans, and one paraphrase per question limit generalization. Future work should use independently constructed query variants and evaluate retrieval changes together with final answer support. The evidence here supports a practical conclusion: access to external documents helps, but reliable answers still require sufficient retrieval and claim-level verification. RAG does not automatically eliminate hallucination.
+
+\textbf{AI disclosure.} Authors Phan Anh Khoa (24125059) and Bùi Trọng Thành (24125043) are responsible for the submitted work. Codex assisted with experimental design, code, writing, and evaluation annotations; Claude Code assisted with report review and editing; Gemini generated the recorded experimental responses. Phan Anh Khoa and Bùi Trọng Thành each reviewed and accepted the evaluation. Codex drafted the paraphrased queries; Phan Anh Khoa reviewed and accepted their semantic equivalence after the experiment, without requesting query changes. No blind multi-rater assessment is claimed.
 
 \newpage
-\subsection*{Extension to an Organizational Document Chatbot}
+\begingroup\small
+\begin{thebibliography}{10}
+\bibitem{lewis} P. Lewis et al. (2020). \textit{Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks}. Advances in Neural Information Processing Systems 33 (NeurIPS 2020). \url{https://papers.neurips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html}.
+\bibitem{schneider} J. Schneider (2024). \textit{Explainable Generative AI (GenXAI): a survey, conceptualization, and research agenda}. Artificial Intelligence Review 57, 289. \url{https://doi.org/10.1007/s10462-024-10916-x}.
+\bibitem{abess} J. Zhu et al. (2022). \textit{abess: A Fast Best-Subset Selection Library in Python and R}. JMLR 23, 1--7. CC BY 4.0. \url{https://jmlr.org/papers/v23/21-1060.html}.
+\bibitem{sklearn} F. Pedregosa et al. (2011). \textit{Scikit-learn: Machine Learning in Python}. JMLR 12, 2825--2830. \url{https://jmlr.org/papers/v12/pedregosa11a.html}. Documentation: \url{https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html}.
+\bibitem{minilm} Sentence Transformers. \textit{all-MiniLM-L6-v2 model card}. Apache 2.0. \url{https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2}.
+\bibitem{gemini} Google. \textit{Gemini API models}. \url{https://ai.google.dev/gemini-api/docs/models}. Actual model and request metadata are recorded in the logs.
+\bibitem{torchmetrics} TorchMetrics. \textit{Retrieval Recall}. \url{https://lightning.ai/docs/torchmetrics/stable/retrieval/recall.html}.
+\bibitem{ragfusion} Z. Rackauckas (2024). \textit{RAG-Fusion: a New Take on Retrieval-Augmented Generation}. \url{https://arxiv.org/abs/2402.03367}.
+\bibitem{crag} S.-Q. Yan et al. (2024). \textit{Corrective Retrieval Augmented Generation}. \url{https://arxiv.org/abs/2401.15884}.
+\bibitem{industryfusion} L. Medrano, A. Verma, and M. Chhabra (2026). \textit{Scaling Retrieval Augmented Generation with RAG Fusion: Lessons from an Industry Deployment}. \url{https://arxiv.org/abs/2603.02153}.
+\end{thebibliography}
+\endgroup
+\section*{Appendix A: Reproduction Materials}
+\begingroup\small
+Repository: \url{https://github.com/Khoaphan-hub/seminar-rag}.
+\begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+\item \texttt{data/questions.json}: 20 questions, references, and gold evidence.
+\item \texttt{results/retrieval\_summary.csv}: aggregate retrieval measurements.
+\item \texttt{results/retrieval\_details.json}: per-question scores and chunks.
+\item \texttt{data/questions\_paraphrased.json}: paired original and paraphrased queries.
+\item \texttt{results/paraphrase\_summary.json}: all paraphrase retrieval configurations.
+\item \texttt{results/generation.jsonl}: prompts and successful API responses.
+\item \texttt{docs/EVALUATION.md}: rubric and annotation limitations.
+\item \texttt{docs/PRESENTATION\_AND\_QA.md}: team roles and discussion questions.
+\end{itemize}
+The source PDF and license information accompany the code. API keys, Python environments, and model weights are excluded from Git. Instructor-supplied foundational papers remain local and are not included under a blanket repository license.
+\endgroup
+\clearpage
+\section*{Appendix B: Extension to an Organizational Document Chatbot}
 An organizational chatbot would need to handle more documents, versions, and ambiguous questions than this seven-page study. A proposed extension is: ingest versioned documents; normalize and, when useful, rewrite a question into focused subqueries; retrieve candidates with lexical and dense search; merge and rerank candidates; assess whether each requested fact has evidence; then generate a cited answer or identify the unsupported part. Feedback and document changes would trigger review and reindexing. These are design options, not features implemented or measured in this project.
 
 \begin{figure}[H]
@@ -279,40 +321,4 @@ An organizational chatbot would need to handle more documents, versions, and amb
 \end{figure}
 
 The observed failures motivate these options: alternate wording for Q06's version requirements, reranking for Q13's architecture passage, and separate license subqueries for Q09. Multi-query fusion~\cite{ragfusion} and corrective retrieval~\cite{crag} inform this proposal, but do not establish gains on our corpus. An industry study reports that reranking and context truncation can erase retrieval gains~\cite{industryfusion}; final answer support and latency therefore also need evaluation. Access controls and source versions must be preserved. This is our synthesis, not a universal industry architecture.
-
-\section{Conclusion}
-RAG improved answer correctness in this demonstration, but retrieval coverage and faithful generation remain separate requirements. With 192-token chunks and $k=3$, TF-IDF achieved 80\% evidence recall on the original questions versus 62.5\% for MiniLM. Under the same generation configuration, fully correct answers increased from 5/20 without retrieval to 16/20 with TF-IDF and 14/20 with MiniLM. Missing evidence, omitted citations, and inaccurate explanations still require explicit review.
-
-The exploratory paraphrase experiment qualifies the original ranking. At the same retrieval setting, evidence recall fell to 55\% for both methods: a decline of 25 percentage points for TF-IDF and 7.5 for MiniLM. MiniLM was less affected by this set of rewordings, but did not outperform TF-IDF in evidence recall after paraphrasing. These results motivate testing realistic query variation rather than selecting a retriever from original-query scores alone. They do not establish universal dense-retrieval superiority, and no answer-quality improvement can be inferred because paraphrased queries were not sent to Gemini.
-
-One corpus, selected gold spans, and one paraphrase per question limit generalization. Future work should use independently constructed query variants and evaluate retrieval changes together with final answer support. The evidence here supports a practical conclusion: access to external documents helps, but reliable answers still require sufficient retrieval and claim-level verification. RAG does not automatically eliminate hallucination.
-
-\textbf{AI disclosure.} Authors Phan Anh Khoa (24125059) and Bùi Trọng Thành (24125043) are responsible for the submitted work. Codex assisted with experimental design, code, writing, and evaluation annotations; Gemini generated the recorded experimental responses. Codex also drafted the paraphrased questions. Phan Anh Khoa confirmed that he read and accepted the evaluation and reviewed and accepted the semantic equivalence of the paraphrases after the retrieval experiment. No score or query changes were requested. This author review is not a blind, independent multi-rater assessment.
-
-\newpage
-\begingroup\small
-\begin{thebibliography}{10}
-\bibitem{lewis} P. Lewis et al. (2020). \textit{Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks}. NeurIPS 2020. \url{https://arxiv.org/pdf/2005.11401}.
-\bibitem{schneider} J. Schneider (2024). \textit{Explainable Generative AI (GenXAI): a survey, conceptualization, and research agenda}. Artificial Intelligence Review 57, 289. \url{https://doi.org/10.1007/s10462-024-10916-x}.
-\bibitem{abess} J. Zhu et al. (2022). \textit{abess: A Fast Best-Subset Selection Library in Python and R}. JMLR 23, 1--7. CC BY 4.0. \url{https://jmlr.org/papers/v23/21-1060.html}.
-\bibitem{sklearn} F. Pedregosa et al. (2011). \textit{Scikit-learn: Machine Learning in Python}. JMLR 12, 2825--2830. \url{https://jmlr.org/papers/v12/pedregosa11a.html}. Documentation: \url{https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html}.
-\bibitem{minilm} Sentence Transformers. \textit{all-MiniLM-L6-v2 model card}. Apache 2.0. \url{https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2}.
-\bibitem{gemini} Google. \textit{Gemini API models}. \url{https://ai.google.dev/gemini-api/docs/models}. Actual model and request metadata are recorded in the logs.
-\bibitem{torchmetrics} TorchMetrics. \textit{Retrieval Recall}. \url{https://lightning.ai/docs/torchmetrics/stable/retrieval/recall.html}.
-\bibitem{ragfusion} Z. Rackauckas (2024). \textit{RAG-Fusion: a New Take on Retrieval-Augmented Generation}. \url{https://arxiv.org/abs/2402.03367}.
-\bibitem{crag} S.-Q. Yan et al. (2024). \textit{Corrective Retrieval Augmented Generation}. \url{https://arxiv.org/abs/2401.15884}.
-\bibitem{industryfusion} L. Medrano, A. Verma, and M. Chhabra (2026). \textit{Scaling Retrieval Augmented Generation with RAG Fusion: Lessons from an Industry Deployment}. \url{https://arxiv.org/abs/2603.02153}.
-\end{thebibliography}
-\endgroup
-\section*{Appendix A: Reproduction Materials}
-\begingroup\small
-Repository: \url{https://github.com/Khoaphan-hub/seminar-rag}.
-\begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
-\item \texttt{data/questions.json}: 20 questions, references, and gold evidence.
-\item \texttt{results/retrieval\_summary.csv}: aggregate retrieval measurements.
-\item \texttt{results/retrieval\_details.json}: per-question scores and chunks.
-\item \texttt{results/generation.jsonl}: prompts and successful API responses.
-\item \texttt{docs/EVALUATION.md}: rubric and annotation limitations.
-\item \texttt{docs/PRESENTATION\_AND\_QA.md}: team roles and discussion questions.
-\end{itemize}
 \end{document}

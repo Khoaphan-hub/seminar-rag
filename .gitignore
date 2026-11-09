@@ -13,6 +13,7 @@ tmp/
 *.out
 *.toc
 *.synctex.gz
+*.synctex(busy)
 report/build-output.txt
 Papers/
 S07_Seminar_RAG.pdf

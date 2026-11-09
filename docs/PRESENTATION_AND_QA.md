@@ -2,14 +2,14 @@
 
 | Presenter | Student ID | Suggested slides | Time | Focus |
 |---|---|---|---|---|
-| Phan Anh Khoa | 24125059 | 1–6 | 7 min 30 sec | Research question, memory, pipeline, equations, corpus, retrievers |
-| Bùi Trọng Thành | 24125043 | 7–12 | 7 min 30 sec | Metrics, retrieval/generation results, examples, failures, verification |
+| Phan Anh Khoa | 24125059 | 1–6 | 7 min | Research question, memory, pipeline, equations, corpus, retrievers |
+| Bùi Trọng Thành | 24125043 | 7–12 | 7 min 5 sec | Metrics, retrieval/generation results, examples, failures, verification |
 
-This is a proposed allocation for two members, not a claim of completed work or rehearsal. Suggested slide durations are 60, 75, 75, 90, 60, 90 seconds for slides 1–6, and 75, 75, 75, 90, 75, 60 seconds for slides 7–12. Total: 900 seconds.
+This is a proposed allocation for two members, not a claim of completed work or rehearsal. Target slide durations are 55, 70, 75, 100, 50, 70 seconds for slides 1–6 (7 min), and 60, 65, 60, 100, 75, 65 seconds for slides 7–12 (7 min 5 sec). Total: 845 seconds (14 min 5 sec), leaving about one minute of buffer.
 
 Both members should answer at least one question during the five-minute Q&A. Rehearse the demo and keep saved response logs available if the free API or classroom network is unavailable.
 
-The local `slides/` folder is empty. The allocation above is provisional; slide content will be discussed later. The Q&A below remains useful for studying the report.
+The 12-slide deck and speaker notes are described in `slides/README.md`. The Q&A below remains useful for studying the report.
 
 ## Discussion Questions and Suggested Answers
 
@@ -29,5 +29,5 @@ The local `slides/` folder is empty. The allocation above is provisional; slide 
 14. **Why not use the original Chroma store?** With a few dozen chunks, exhaustive normalized dot products are sufficient and easy to inspect. The prototype's default distance should not be assumed identical to the experiment's cosine.
 15. **How should documents be updated?** Track versions and hashes, rebuild extraction/chunks/index after changes, remove stale chunks, and rerun regression checks. Historical questions retain the 2022 snapshot.
 16. **Are the RAG-Sequence example probabilities measured?** No. They are explicitly hypothetical teaching values. The API logs do not provide those conditional sequence probabilities.
-17. **Who graded the answers?** An AI assistant checked them against sources and prompts. There is no independent blind multi-rater evaluation yet. Phan Anh Khoa has read and accepted the labels. A separate review by Bùi Trọng Thành has not been confirmed.
+17. **Who graded the answers?** An AI assistant checked them against sources and prompts. There is no independent blind multi-rater evaluation. Phan Anh Khoa and Bùi Trọng Thành have both reviewed and accepted the labels.
 18. **Would 20/20 correct establish a hallucination-free model?** No. It would describe only the observed questions under the stated rubric and run conditions, not a guarantee for other questions.

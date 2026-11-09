@@ -23,7 +23,7 @@ class EvidenceChecks(unittest.TestCase):
             for chunk in contexts:
                 self.assertIn(chunk['text'],row['prompt'])
         review=json.loads((ROOT/'results/answer_summary.json').read_text(encoding='utf-8'))
-        self.assertEqual(review['source_sha256'],hashlib.sha256(source.read_bytes()).hexdigest())
+        self.assertEqual(review['generation_sha256'],hashlib.sha256(source.read_bytes()).hexdigest())
 
     def test_gold_quotes_exist_in_correct_pages(self):
         pages=json.loads((ROOT/'data/processed/pages.json').read_text(encoding='utf-8'))

@@ -1,0 +1,26 @@
+<section id="equations" data-transition="fade" style="background:#FBFBF8;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">RAG-Sequence and RAG-Token</h2>
+<div style="flex:1;display:flex;flex-direction:column;gap:24px">
+<div style="flex:1;display:grid;grid-template-rows:1fr;grid-template-columns:repeat(2, 1fr);gap:32px">
+<div style="display:flex;flex-direction:column;justify-content:center;gap:20px;background:#EDF0F3;padding:40px;border-radius:16px">
+<h3 style="font-size:44px;font-weight:600">Sequence</h3>
+<p style="font-size:40px;letter-spacing:1px;line-height:1.3;font-family:'Source Serif 4', Georgia, serif">p(y|x) ≈ Σ<i>z</i> pη(z|x) · pθ(y|x,z)</p>
+<p style="font-size:32px;line-height:1.3;color:#3D4A5F">One document for the whole output</p>
+<p style="font-size:32px;line-height:1.4">z1: 0.6 × 0.7 = 0.42<br>z2: 0.4 × 0.2 = 0.08<br>0.42 + 0.08 = <b>0.50</b></p>
+</div>
+<div style="display:flex;flex-direction:column;justify-content:center;gap:20px;background:#DDF0EE;padding:40px;border-radius:16px">
+<h3 style="font-size:44px;font-weight:600">Token</h3>
+<p style="font-size:40px;letter-spacing:1px;line-height:1.3;font-family:'Source Serif 4', Georgia, serif">p(y|x) ≈ Π<i>i</i> Σ<i>z</i> pη(z|x) · pθ(y<i>i</i>|x,z,y&lt;<i>i</i>)</p>
+<p style="font-size:32px;line-height:1.3;color:#3D4A5F">Documents mixed at each token</p>
+<p style="font-size:32px;line-height:1.4">y1: 0.6 × 0.875 + 0.4 × 0.5 = 0.725<br>y2: 0.6 × 0.8 + 0.4 × 0.4 = 0.64<br>0.725 × 0.64 = <b>0.464</b></p>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.4;color:#3D4A5F"><b>x</b> question · <b>y</b> output · <b>z</b> document in top-k · <b>η</b> retriever · <b>θ</b> generator · probabilities in [0, 1]</p>
+</div>
+<div style="background:#DDF0EE;padding:28px 40px;border-radius:16px">
+<p style="font-size:32px;line-height:1.3;font-weight:600">Our API demo concatenates chunks, so it implements neither formula.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1500px;font-size:24px;color:#5A6577">Equations: Lewis et al., NeurIPS 2020 · Numbers are hypothetical, not from Gemini</p>
+<p style="position:absolute;right:128px;bottom:64px;width:100px;font-size:24px;text-align:right;color:#5A6577">4</p>
+<aside>[Phan Anh Khoa · 100 seconds] These are the two formulations from Lewis and colleagues. x is the question, y is the output token sequence, and z is a document from the top-k set. Eta and theta are the retriever and generator parameters. In RAG-Sequence, each term fixes one document for the entire output, and then we add the terms. Take two documents with weights 0.6 and 0.4, and suppose the probability of the complete sequence is 0.7 under the first and 0.2 under the second. That gives 0.42 plus 0.08, which is 0.50. RAG-Token moves the sum inside the product, so documents are mixed at each token. With the same model and a two-token output, the first token mixes to 0.725 and the second to 0.64. Their product is 0.464. This does not mean searching the database again for every token. Two warnings. These numbers are illustrative and did not come from Gemini. And a sequence probability is not the probability that the content is true. Our demo places chunks in a prompt and calls an API, so it does not implement either marginalization. The equations are the theoretical foundation, not our implementation.</aside>
+</section>
