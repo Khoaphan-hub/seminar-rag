@@ -2,14 +2,14 @@
 
 | Presenter | Student ID | Suggested slides | Time | Focus |
 |---|---|---|---|---|
-| Phan Anh Khoa | 24125059 | 1–6 | 7 min 30 sec | Research question, memory, pipeline, equations, corpus, retrievers |
-| Bùi Trọng Thành | 24125043 | 7–12 | 7 min 30 sec | Metrics, retrieval/generation results, examples, failures, verification |
+| Phan Anh Khoa | 24125059 | 1–6 | 7 min | Research question, memory, pipeline, equations, corpus, retrievers |
+| Bùi Trọng Thành | 24125043 | 7–12 | 7 min 5 sec | Metrics, retrieval/generation results, examples, failures, verification |
 
-This is a proposed allocation for two members, not a claim of completed work or rehearsal. Suggested slide durations are 60, 75, 75, 90, 60, 90 seconds for slides 1–6, and 75, 75, 75, 90, 75, 60 seconds for slides 7–12. Total: 900 seconds.
+This is a proposed allocation for two members, not a claim of completed work or rehearsal. Target slide durations are 55, 70, 75, 100, 50, 70 seconds for slides 1–6 (7 min), and 60, 65, 60, 100, 75, 65 seconds for slides 7–12 (7 min 5 sec). Total: 845 seconds (14 min 5 sec), leaving about one minute of buffer.
 
 Both members should answer at least one question during the five-minute Q&A. Rehearse the demo and keep saved response logs available if the free API or classroom network is unavailable.
 
-The local `slides/` folder is empty. The allocation above is provisional; slide content will be discussed later. The Q&A below remains useful for studying the report.
+The 12-slide deck and speaker notes are described in `slides/README.md`. The Q&A below remains useful for studying the report.
 
 ## Discussion Questions and Suggested Answers
 
