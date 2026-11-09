@@ -18,7 +18,7 @@ Team: **Phan Anh Khoa — 24125059** and **Bùi Trọng Thành — 24125043**.
 | Required paper and Sequence/Token comparison | Report: Background and Method |
 | A4 report, 6–10 content pages | English LaTeX/PDF edition requested by the team; the instructor permits 1–2 additional content pages, as reported by the team |
 | Team names and student IDs | Report title block and README |
-| Presentation: 8–12 slides, 15 minutes | 12-slide deck with speaker notes, timed to 14 min 5 sec; see `slides/README.md` |
+| Presentation: 8–12 slides, 15 minutes 14 slides (title plus 13 content slides, one over the 8–12 limit) with speaker notes, timed to 14 min 30 sec; see `slides/README.md` |
 | Five-minute Q&A, participation by every member | Two-person plan in `docs/PRESENTATION_AND_QA.md` |
 | Attribution for data, tables, diagrams, equations, and AI | Bibliography, captions, notices, AI disclosure |
 
